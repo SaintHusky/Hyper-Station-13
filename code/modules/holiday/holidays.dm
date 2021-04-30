@@ -333,6 +333,16 @@
 /datum/holiday/halloween/getStationPrefix()
 	return pick("Bone-Rattling","Mr. Bones' Own","2SPOOKY","Spooky","Scary","Skeletons")
 
+/datum/holiday/jacqueen //Subset of halloween
+	name = "jacqueen"
+	begin_day = 27
+	begin_month = OCTOBER
+	end_day = 2
+	end_month = NOVEMBER
+
+/datum/holiday/jacqueen/greet()
+	return "Jacqueline the great Pumpqueen has come to visit!"
+
 /datum/holiday/vegan
 	name = "Vegan Day"
 	begin_day = 1
@@ -450,7 +460,7 @@ Since Ramadan is an entire month that lasts 29.5 days on average, the start and 
 
 /datum/holiday/xmas
 	name = CHRISTMAS
-	begin_day = 22
+	begin_day = 10
 	begin_month = DECEMBER
 	end_day = 27
 	drone_hat = /obj/item/clothing/head/santa

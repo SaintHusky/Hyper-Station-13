@@ -1,6 +1,11 @@
 /mob/living/carbon/Life()
 	set invisibility = 0
 
+	//Hyper Change
+	if(size_multiplier != previous_size)
+		sleep(1)
+		resize(size_multiplier)
+
 	if(notransform)
 		return
 
@@ -69,7 +74,13 @@
 	if((times_fired % next_breath) == 0 || failed_last_breath)
 		breathe() //Breathe per 4 ticks if healthy, down to 2 if our lungs or heart are damaged, unless suffocating
 		if(failed_last_breath)
-			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "suffocation", /datum/mood_event/suffocation)
+			var/mob/living/carbon/human/B = src
+			if(HAS_TRAIT(B, TRAIT_CHOKE_SLUT))
+				B.adjustArousalLoss(7)
+				if (B.getArousalLoss() >= 100 && ishuman(B) && B.has_dna())
+					B.mob_climax(forced_climax=TRUE)	
+			else
+				SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "suffocation", /datum/mood_event/suffocation)
 		else
 			SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "suffocation")
 	else
@@ -396,6 +407,8 @@
 			if(O)
 				O.on_life()
 	else
+		if(reagents.has_reagent("formaldehyde", 1)) // No organ decay if the body contains formaldehyde.
+			return
 		for(var/V in internal_organs)
 			var/obj/item/organ/O = V
 			if(O)
@@ -660,6 +673,9 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Yo man, what if, we like, uh, put
 
 //used in human and monkey handle_environment()
 /mob/living/carbon/proc/natural_bodytemperature_stabilization()
+	if (HAS_TRAIT(src, TRAIT_COLDBLOODED))
+		return 0 //Return 0 as your natural temperature. Species proc handle_environment() will adjust your temperature based on this.
+
 	var/body_temperature_difference = BODYTEMP_NORMAL - bodytemperature
 	switch(bodytemperature)
 		if(-INFINITY to BODYTEMP_COLD_DAMAGE_LIMIT) //Cold damage limit is 50 below the default, the temperature where you start to feel effects.

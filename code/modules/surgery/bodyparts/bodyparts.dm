@@ -76,13 +76,13 @@
 	var/heavy_burn_msg = "peeling away"
 
 /obj/item/bodypart/examine(mob/user)
-	..()
+	. = ..()
 	if(brute_dam > DAMAGE_PRECISION)
-		to_chat(user, "<span class='warning'>This limb has [brute_dam > 30 ? "severe" : "minor"] bruising.</span>")
+		. += "<span class='warning'>This limb has [brute_dam > 30 ? "severe" : "minor"] bruising.</span>"
 	if(burn_dam > DAMAGE_PRECISION)
-		to_chat(user, "<span class='warning'>This limb has [burn_dam > 30 ? "severe" : "minor"] burns.</span>")
+		. += "<span class='warning'>This limb has [burn_dam > 30 ? "severe" : "minor"] burns.</span>"
 	if(broken == TRUE)
-		to_chat(user, "<span class='warning'>This limb is broken.</span>")
+		. += "<span class='warning'>This limb is broken.</span>"
 
 /obj/item/bodypart/blob_act()
 	take_damage(max_damage)
@@ -124,7 +124,7 @@
 	else
 		return ..()
 
-/obj/item/bodypart/throw_impact(atom/hit_atom)
+/obj/item/bodypart/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	..()
 	if(status != BODYPART_ROBOTIC)
 		playsound(get_turf(src), 'sound/misc/splort.ogg', 50, 1, -1)
@@ -229,8 +229,6 @@
 	return total
 
 //Checks disabled status thresholds
-
-//Checks disabled status thresholds
 /obj/item/bodypart/proc/update_disabled()
 	set_disabled(is_disabled())
 
@@ -257,11 +255,12 @@
 
 /obj/item/bodypart/proc/set_disabled(new_disabled)
 	if(disabled == new_disabled)
-		return
+		return FALSE
 	disabled = new_disabled
 	owner.update_health_hud() //update the healthdoll
 	owner.update_body()
 	owner.update_canmove()
+	return TRUE
 
 //Updates an organ's brute/burn states for use by update_damage_overlays()
 //Returns 1 if we need to update overlays. 0 otherwise.
@@ -287,7 +286,7 @@
 		if(status == BODYPART_ORGANIC)
 			icon = base_bp_icon || DEFAULT_BODYPART_ICON_ORGANIC
 		else if(status == BODYPART_ROBOTIC)
-			icon = base_bp_icon || DEFAULT_BODYPART_ICON_ROBOTIC
+			icon = DEFAULT_BODYPART_ICON_ROBOTIC
 
 	if(owner)
 		owner.updatehealth()
@@ -377,7 +376,7 @@
 			Smark = GLOB.mam_body_markings_list[H.dna.features["mam_body_markings"]]
 			if(Smark)
 				body_markings_icon = Smark.icon
-			if(H.dna.features.["mam_body_markings"] != "None")
+			if(H.dna.features["mam_body_markings"] != "None")
 				body_markings = Smark?.icon_state || lowertext(H.dna.features["mam_body_markings"])
 				auxmarking = Smark?.icon_state || lowertext(H.dna.features["mam_body_markings"])
 			else

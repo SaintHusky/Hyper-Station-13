@@ -221,12 +221,14 @@
 	attack_sound = 'sound/weapons/slash.ogg'
 	miss_sound = 'sound/weapons/slashmiss.ogg'
 	meat = /obj/item/reagent_containers/food/snacks/meat/slab/xeno
+	gib_types = list(/obj/effect/gibspawner/xeno/xenoperson, /obj/effect/gibspawner/xeno/xenoperson/bodypartless)
 	skinned_type = /obj/item/stack/sheet/animalhide/xeno
-	exotic_bloodtype = "L"
+	exotic_bloodtype = "X*"
 	damage_overlay_type = "xeno"
 	liked_food = MEAT
 
 /datum/species/xeno/on_species_gain(mob/living/carbon/human/C, datum/species/old_species)
+	C.grant_language(/datum/language/xenocommon)
 	if(("legs" in C.dna.species.mutant_bodyparts) && C.dna.features["legs"] == "Digitigrade Legs")
 		species_traits += DIGITIGRADE
 	if(DIGITIGRADE in species_traits)
@@ -234,6 +236,7 @@
 	. = ..()
 
 /datum/species/xeno/on_species_loss(mob/living/carbon/human/C, datum/species/new_species)
+	C.remove_language(/datum/language/xenocommon)
 	if(("legs" in C.dna.species.mutant_bodyparts) && C.dna.features["legs"] == "Normal Legs")
 		species_traits -= DIGITIGRADE
 	if(DIGITIGRADE in species_traits)
@@ -261,7 +264,7 @@
 	mutantstomach = /obj/item/organ/stomach/ipc
 	mutanteyes = /obj/item/organ/eyes/ipc
 
-	exotic_bloodtype = "S"
+	exotic_bloodtype = "SY"
 
 
 /datum/species/synthliz/qualifies_for_rank(rank, list/features)
@@ -294,6 +297,14 @@
 		mutant_bodyparts -= "mam_waggingtail"
 		mutant_bodyparts |= "mam_tail"
 	H.update_body()
+
+/datum/species/synthliz/on_species_gain(mob/living/carbon/human/H, datum/species/old_species)
+	..()
+	H.grant_language(/datum/language/machine)
+
+/datum/species/synthliz/on_species_loss(mob/living/carbon/human/H)
+	H.remove_language(/datum/language/machine)
+	..()
 //Praise the Omnissiah, A challange worthy of my skills - HS
 
 //EXOTIC//

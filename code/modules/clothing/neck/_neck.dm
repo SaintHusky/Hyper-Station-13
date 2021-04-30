@@ -12,12 +12,12 @@
 		if(body_parts_covered & HEAD)
 			if(damaged_clothes)
 				. += mutable_appearance('icons/effects/item_damage.dmi', "damagedmask")
-			IF_HAS_BLOOD_DNA(src)
-				. += mutable_appearance('icons/effects/blood.dmi', "maskblood")
+			if(blood_DNA)
+				. += mutable_appearance('icons/effects/blood.dmi', "maskblood", color = blood_DNA_to_color())
 
 /obj/item/clothing/neck/tie
 	name = "tie"
-	desc = "A neosilk clip-on tie."
+	desc = "Why do we all have to wear these ridiculous ties?"
 	icon = 'icons/obj/clothing/neck.dmi'
 	icon_state = "bluetie"
 	item_state = ""	//no inhands
@@ -65,8 +65,11 @@
 
 			var/obj/item/organ/heart/heart = M.getorganslot(ORGAN_SLOT_HEART)
 			var/obj/item/organ/lungs/lungs = M.getorganslot(ORGAN_SLOT_LUNGS)
+		
 
-			if(!(M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH))))
+			if (!do_mob(user,M,60))	// Stethoscope should take a moment to listen
+				return // FAIL
+			if(!(M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH)) || (HAS_TRAIT(M, TRAIT_NOPULSE))))
 				if(heart && istype(heart))
 					heart_strength = "<span class='danger'>an unstable</span>"
 					if(heart.beating)
@@ -266,6 +269,16 @@
 
 	hasprimary = TRUE
 	primary_color = "#222222"
+
+/obj/item/clothing/neck/petcollar/locked/security
+	name = "security collar"
+	desc = "For when you need to show everyone who your pet belongs to."
+	icon_state = "seccollar"
+	item_state = "seccollar"
+	hasprimary = FALSE
+	hassecondary = FALSE
+	hastertiary = FALSE
+
 
 /obj/item/key/collar
 	name = "Collar Key"

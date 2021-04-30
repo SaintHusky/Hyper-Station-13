@@ -26,6 +26,7 @@
 	spacewalk = TRUE
 	sight = SEE_SELF
 	throwforce = 0
+	rad_flags = RAD_NO_CONTAMINATE | RAD_PROTECT_CONTENTS
 
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
@@ -43,7 +44,7 @@
 	wander = FALSE
 	density = FALSE
 	movement_type = FLYING
-	anchored = TRUE
+	move_resist = MOVE_FORCE_OVERPOWERING
 	mob_size = MOB_SIZE_TINY
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMOB
 	speed = 1
@@ -360,7 +361,7 @@
 	user.dropItemToGround(src)
 	scatter()
 
-/obj/item/ectoplasm/revenant/throw_impact(atom/hit_atom)
+/obj/item/ectoplasm/revenant/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	..()
 	if(inert)
 		return
@@ -368,11 +369,11 @@
 	scatter()
 
 /obj/item/ectoplasm/revenant/examine(mob/user)
-	..()
+	. = ..()
 	if(inert)
-		to_chat(user, "<span class='revennotice'>It seems inert.</span>")
+		. += "<span class='revennotice'>It seems inert.</span>"
 	else if(reforming)
-		to_chat(user, "<span class='revenwarning'>It is shifting and distorted. It would be wise to destroy this.</span>")
+		. += "<span class='revenwarning'>It is shifting and distorted. It would be wise to destroy this.</span>"
 
 /obj/item/ectoplasm/revenant/proc/reform()
 	if(QDELETED(src) || QDELETED(revenant) || inert)

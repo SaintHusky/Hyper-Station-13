@@ -8,21 +8,23 @@
 	mob_trait = TRAIT_ALCOHOL_TOLERANCE
 	gain_text = "<span class='notice'>You feel like you could drink a whole keg!</span>"
 	lose_text = "<span class='danger'>You don't feel as resistant to alcohol anymore. Somehow.</span>"
+	medical_record_text = "Patient demonstrates a high tolerance for alcohol."
 
 /datum/quirk/apathetic
 	name = "Apathetic"
 	desc = "You just don't care as much as other people. That's nice to have in a place like this, I guess."
 	value = 1
 	mood_quirk = TRUE
+	medical_record_text = "Patient was administered the Apathy Evaluation Scale but did not bother to complete it."
 
 /datum/quirk/apathetic/add()
-	GET_COMPONENT_FROM(mood, /datum/component/mood, quirk_holder)
+	var/datum/component/mood/mood = quirk_holder.GetComponent(/datum/component/mood)
 	if(mood)
 		mood.mood_modifier = 0.8
 
 /datum/quirk/apathetic/remove()
 	if(quirk_holder)
-		GET_COMPONENT_FROM(mood, /datum/component/mood, quirk_holder)
+		var/datum/component/mood/mood = quirk_holder.GetComponent(/datum/component/mood)
 		if(mood)
 			mood.mood_modifier = 1 //Change this once/if species get their own mood modifiers.
 
@@ -42,6 +44,7 @@
 	mob_trait = TRAIT_EMPATH
 	gain_text = "<span class='notice'>You feel in tune with those around you.</span>"
 	lose_text = "<span class='danger'>You feel isolated from others.</span>"
+	medical_record_text = "Patient is highly perceptive of and sensitive to social cues, or may possibly have ESP. Further testing needed."
 
 /datum/quirk/freerunning
 	name = "Freerunning"
@@ -50,6 +53,7 @@
 	mob_trait = TRAIT_FREERUNNING
 	gain_text = "<span class='notice'>You feel lithe on your feet!</span>"
 	lose_text = "<span class='danger'>You feel clumsy again.</span>"
+	medical_record_text = "Patient scored highly on cardio tests."
 
 /datum/quirk/friendly
 	name = "Friendly"
@@ -59,6 +63,7 @@
 	gain_text = "<span class='notice'>You want to hug someone.</span>"
 	lose_text = "<span class='danger'>You no longer feel compelled to hug others.</span>"
 	mood_quirk = TRUE
+	medical_record_text = "Patient demonstrates low-inhibitions for physical contact and well-developed arms. Requesting another doctor take over this case."
 
 /datum/quirk/jolly
 	name = "Jolly"
@@ -66,6 +71,11 @@
 	value = 1
 	mob_trait = TRAIT_JOLLY
 	mood_quirk = TRUE
+	medical_record_text = "Patient demonstrates constant euthymia irregular for environment. It's a bit much, to be honest."
+
+/datum/quirk/jolly/on_process()
+	if(prob(0.05))
+		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "jolly", /datum/mood_event/jolly)
 
 /datum/quirk/light_step
 	name = "Light Step"
@@ -74,6 +84,7 @@
 	mob_trait = TRAIT_LIGHT_STEP
 	gain_text = "<span class='notice'>You walk with a little more litheness.</span>"
 	lose_text = "<span class='danger'>You start tromping around like a barbarian.</span>"
+	medical_record_text = "Patient's dexterity belies a strong capacity for stealth."
 
 /datum/quirk/quick_step
 	name = "Quick Step"
@@ -82,6 +93,7 @@
 	mob_trait = TRAIT_SPEEDY_STEP
 	gain_text = "<span class='notice'>You feel determined. No time to lose.</span>"
 	lose_text = "<span class='danger'>You feel less determined. What's the rush, man?</span>"
+	medical_record_text = "Patient scored highly on racewalking tests."
 
 /datum/quirk/musician
 	name = "Musician"
@@ -90,15 +102,24 @@
 	mob_trait = TRAIT_MUSICIAN
 	gain_text = "<span class='notice'>You know everything about musical instruments.</span>"
 	lose_text = "<span class='danger'>You forget how musical instruments work.</span>"
+	medical_record_text = "Patient brain scans show a highly-developed auditory pathway."
 
 /datum/quirk/musician/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/instrument/guitar/guitar = new(get_turf(H))
-	H.put_in_hands(guitar)
-	H.equip_to_slot(guitar, SLOT_IN_BACKPACK)
+	var/list/instrument_slots = list (
+		"backpack" = SLOT_IN_BACKPACK,
+		"hands" = SLOT_HANDS,
+	)
+	H.equip_in_one_of_slots(guitar, instrument_slots, qdel_on_fail = TRUE)
 	var/obj/item/musicaltuner/musicaltuner = new(get_turf(H))
-	H.put_in_hands(musicaltuner)
-	H.equip_to_slot(musicaltuner, SLOT_IN_BACKPACK)
+	var/list/tuner_slots = list (
+		"backpack" = SLOT_IN_BACKPACK,
+		"hands" = SLOT_HANDS,
+		"left pocket" = SLOT_L_STORE,
+		"right pocket" = SLOT_R_STORE
+	)
+	H.equip_in_one_of_slots(musicaltuner, tuner_slots, qdel_on_fail = TRUE)
 	H.regenerate_icons()
 
 /datum/quirk/night_vision
@@ -123,12 +144,19 @@
 	mob_trait = TRAIT_PHOTOGRAPHER
 	gain_text = "<span class='notice'>You know everything about photography.</span>"
 	lose_text = "<span class='danger'>You forget how photo cameras work.</span>"
+	medical_record_text = "Patient mentions photography as a stress-relieving hobby."
 
 /datum/quirk/photographer/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/camera/camera = new(get_turf(H))
-	H.put_in_hands(camera)
-	H.equip_to_slot(camera, SLOT_NECK)
+	var/list/camera_slots = list (
+		"neck" = ITEM_SLOT_NECK,
+		"left pocket" = SLOT_L_STORE,
+		"right pocket" = SLOT_R_STORE,
+		"backpack" = SLOT_IN_BACKPACK,
+		"hands" = SLOT_HANDS
+	)
+	H.equip_in_one_of_slots(camera, camera_slots, qdel_on_fail = TRUE)
 	H.regenerate_icons()
 
 /datum/quirk/selfaware
@@ -136,6 +164,7 @@
 	desc = "You know your body well, and can accurately assess the extent of your wounds."
 	value = 2
 	mob_trait = TRAIT_SELF_AWARE
+	medical_record_text = "Patient demonstrates an uncanny knack for self-diagnosis."
 
 /datum/quirk/skittish
 	name = "Skittish"
@@ -150,6 +179,7 @@
 	mob_trait = TRAIT_SPIRITUAL
 	gain_text = "<span class='notice'>You feel a little more faithful to the gods today.</span>"
 	lose_text = "<span class='danger'>You feel less faithful in the gods.</span>"
+	medical_record_text = "Patient reports a belief in a higher power."
 
 /datum/quirk/tagger
 	name = "Tagger"
@@ -158,12 +188,18 @@
 	mob_trait = TRAIT_TAGGER
 	gain_text = "<span class='notice'>You know how to tag walls efficiently.</span>"
 	lose_text = "<span class='danger'>You forget how to tag walls properly.</span>"
+	medical_record_text = "Patient was recently seen for possible paint huffing incident."
 
 /datum/quirk/tagger/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/toy/crayon/spraycan/spraycan = new(get_turf(H))
-	H.put_in_hands(spraycan)
-	H.equip_to_slot(spraycan, SLOT_IN_BACKPACK)
+	var/list/spray_slots = list (
+		"backpack" = SLOT_IN_BACKPACK,
+		"hands" = SLOT_HANDS,
+		"left pocket" = SLOT_L_STORE,
+		"right pocket" = SLOT_R_STORE
+	)
+	H.equip_in_one_of_slots(spraycan, spray_slots, qdel_on_fail = TRUE)
 	H.regenerate_icons()
 
 /datum/quirk/voracious
@@ -173,6 +209,7 @@
 	mob_trait = TRAIT_VORACIOUS
 	gain_text = "<span class='notice'>You feel HONGRY.</span>"
 	lose_text = "<span class='danger'>You no longer feel HONGRY.</span>"
+	medical_record_text = "Patient demonstrates a disturbing capacity for eating."
 
 /datum/quirk/trandening
 	name = "High Luminosity Eyes"
@@ -184,7 +221,13 @@
 /datum/quirk/trandening/on_spawn()
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/autosurgeon/gloweyes/gloweyes = new(get_turf(H))
-	H.equip_to_slot(gloweyes, SLOT_IN_BACKPACK)
+	var/list/gloweye_slots = list (
+		"backpack" = SLOT_IN_BACKPACK,
+		"hands" = SLOT_HANDS,
+		"left pocket" = SLOT_L_STORE,
+		"right pocket" = SLOT_R_STORE
+	)
+	H.equip_in_one_of_slots(gloweyes, gloweye_slots, qdel_on_fail = TRUE)
 	H.regenerate_icons()
 
 /datum/quirk/bloodpressure
@@ -194,15 +237,34 @@
 	mob_trait = TRAIT_HIGH_BLOOD
 	gain_text = "<span class='notice'>You feel full of blood!</span>"
 	lose_text = "<span class='notice'>You feel like your blood pressure went down.</span>"
+	medical_record_text = "Patient's blood tests report an abnormal concentration of red blood cells in their bloodstream."
 
 /datum/quirk/bloodpressure/add()
-	var/mob/living/M = quirk_holder
-	M.blood_ratio = 1.2
-	M.blood_volume += 150
+	quirk_holder.blood_ratio = 1.2
+	quirk_holder.blood_volume += 150
 
 /datum/quirk/bloodpressure/remove()
-	var/mob/living/M = quirk_holder
-	M.blood_ratio = 1
+	if(quirk_holder)
+		quirk_holder.blood_ratio = 1
+
+/datum/quirk/tough
+	name = "Tough"
+	desc = "Your body is abnormally enduring and can take 10% more damage."
+	value = 2
+	mob_trait = TRAIT_TOUGH
+	medical_record_text = "Patient has an abnormally high capacity for injury."
+	gain_text = "<span class='notice'>You feel very sturdy.</span>"
+	lose_text = "<span class='notice'>You feel less sturdy.</span>"
+	var/healthchange = 0
+
+/datum/quirk/tough/add()
+	var/mob/living/carbon/human/H = quirk_holder
+	healthchange = H.maxHealth * 0.1
+	H.maxHealth = H.maxHealth * 1.1
+
+/datum/quirk/tough/remove()
+	var/mob/living/carbon/human/H = quirk_holder
+	H.maxHealth += healthchange
 
 /datum/quirk/draconicspeaker
 	name = "Draconic speaker"
