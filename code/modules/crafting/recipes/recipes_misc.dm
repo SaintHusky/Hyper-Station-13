@@ -336,40 +336,67 @@
 	time = 70
 	category = CAT_MISC 
 
-	/datum/crafting_recipe/bloodsucker/vassalrack
-		name = "Persuasion Rack"
-		//desc = "For converting crewmembers into loyal Vassals."
-		result = /obj/structure/bloodsucker/vassalrack
-		tools = list(/obj/item/weldingtool,
-					 ///obj/item/screwdriver,
-					 /obj/item/wrench
-					 )
-		reqs = list(/obj/item/stack/sheet/mineral/wood = 3,
-					/obj/item/stack/sheet/metal = 2,
-					/obj/item/restraints/handcuffs/cable = 2,
-					///obj/item/storage/belt = 1
-					///obj/item/stack/sheet/animalhide = 1, // /obj/item/stack/sheet/leather = 1,
-					///obj/item/stack/sheet/plasteel = 5
+/datum/crafting_recipe/bloodsucker/vassalrack
+	name = "Persuasion Rack"
+	//desc = "For converting crewmembers into loyal Vassals."
+	result = /obj/structure/bloodsucker/vassalrack
+	tools = list(/obj/item/weldingtool,
+					///obj/item/screwdriver,
+					/obj/item/wrench
 					)
-		//parts = list(/obj/item/storage/belt = 1
-		//			 )
+	reqs = list(/obj/item/stack/sheet/mineral/wood = 3,
+				/obj/item/stack/sheet/metal = 2,
+				/obj/item/restraints/handcuffs/cable = 2,
+				///obj/item/storage/belt = 1
+				///obj/item/stack/sheet/animalhide = 1, // /obj/item/stack/sheet/leather = 1,
+				///obj/item/stack/sheet/plasteel = 5
+				)
+	//parts = list(/obj/item/storage/belt = 1
+	//			 )
 
-		time = 150
-		category = CAT_MISC
-		always_availible = FALSE	// Disabled til learned
+	time = 150
+	category = CAT_MISC
+	always_availible = FALSE	// Disabled til learned
 
 
-	/datum/crafting_recipe/bloodsucker/candelabrum
-		name = "Candelabrum"
-		//desc = "For converting crewmembers into loyal Vassals."
-		result = /obj/structure/bloodsucker/candelabrum
-		tools = list(/obj/item/weldingtool,
-					 /obj/item/wrench
-					 )
-		reqs = list(/obj/item/stack/sheet/metal = 3,
-					/obj/item/stack/rods = 1,
-					/obj/item/candle = 1
+/datum/crafting_recipe/bloodsucker/candelabrum
+	name = "Candelabrum"
+	//desc = "For converting crewmembers into loyal Vassals."
+	result = /obj/structure/bloodsucker/candelabrum
+	tools = list(/obj/item/weldingtool,
+					/obj/item/wrench
 					)
-		time = 100
-		category = CAT_MISC
-		always_availible = FALSE	// Disabled til learned
+	reqs = list(/obj/item/stack/sheet/metal = 3,
+				/obj/item/stack/rods = 1,
+				/obj/item/candle = 1
+				)
+	time = 100
+	category = CAT_MISC
+	always_availible = FALSE	// Disabled til learned
+
+//Bouquets <3
+/datum/crafting_recipe/mixedbouquet
+	name = "Mixed bouquet"
+	result = /obj/item/bouquet
+	reqs = list(/obj/item/reagent_containers/food/snacks/grown/poppy/lily =2,
+				/obj/item/grown/sunflower = 2,
+				/obj/item/reagent_containers/food/snacks/grown/poppy/geranium = 2)
+	category = CAT_MISC
+
+/datum/crafting_recipe/sunbouquet
+	name = "Sunflower bouquet"
+	result = /obj/item/bouquet/sunflower
+	reqs = list(/obj/item/grown/sunflower = 6)
+	category = CAT_MISC
+
+/datum/crafting_recipe/poppybouquet
+	name = "Poppy bouquet"
+	result = /obj/item/bouquet/poppy
+	reqs = list (/obj/item/reagent_containers/food/snacks/grown/poppy = 6)
+	category = CAT_MISC
+
+/datum/crafting_recipe/rosebouquet
+	name = "Rose bouquet"
+	result = /obj/item/bouquet/rose
+	reqs = list(/obj/item/grown/rose = 6)
+	category = CAT_MISC

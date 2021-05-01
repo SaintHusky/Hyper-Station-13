@@ -6,14 +6,12 @@
 	zone 					= "chest"
 	slot 					= "belly"
 	w_class 				= 3
-	size 					= BELLY_SIZE_DEF
+	size 					= 1
 	var/statuscheck			= FALSE
+	shape					= "Pair"
 	masturbation_verb 		= "massage"
 	can_climax				= FALSE
-	var/cached_size			= null //for enlargement SHOULD BE A NUMBER
-	var/prev_size			//For flavour texts SHOULD BE A LETTER
-	//var/belly_sizes 		= list ("a", "b", "c", "d")
-	var/belly_values 		= list ("a" = 0, "b" = 1, "c" = 2, "d" = 3)
+	var/sent_full_message	= TRUE //defaults to 1 since they're full to start
 
 
 /obj/item/organ/genital/belly/on_life()

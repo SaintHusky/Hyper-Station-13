@@ -216,6 +216,10 @@
 	icon = "honkednloaded"
 	desc = "Honk."
 
+/datum/barsign/cumzone
+	name = "The Cumzone"
+	icon = "thecumzone"
+	desc = "Welcome."
 
 /datum/barsign/thenest
 	name = "The Nest"
@@ -301,7 +305,7 @@
 
 /datum/barsign/meow_mix
 	name = "Meow Mix"
-	icon = "meow_mix"
+	icon = "meow mix"
 	desc = "No, we don't serve catnip, officer!"
 
 /datum/barsign/goose

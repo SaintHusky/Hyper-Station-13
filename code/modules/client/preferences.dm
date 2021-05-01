@@ -46,6 +46,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/buttons_locked = FALSE
 	var/hotkeys = FALSE
 	var/chat_on_map = TRUE
+	var/autocorrect = TRUE
 	var/radiosounds = TRUE
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	var/see_chat_non_mob = TRUE
@@ -68,6 +69,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pda_skin = PDA_SKIN_ALT
 
 	var/list/alt_titles_preferences = list()
+	var/static/preview_job_outfit = TRUE	//shouldn't be something that's saved, but this is a preference option
 
 	var/uses_glasses_colour = 0
 
@@ -96,7 +98,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	//H13
 	var/body_size = 100					//Body Size in percent
-	var/can_get_preg = 0				//Body Size in percent
+	var/can_get_preg = 0				//if they can get preggers
+
 
 	var/datum/species/pref_species = new /datum/species/human()	//Mutant race
 	var/list/features = list("mcolor" = "FFF",
@@ -134,6 +137,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		"cock_color" = "fff",
 		"has_sheath" = FALSE,
 		"sheath_color" = "fff",
+		"has_belly" = FALSE,
+		"hide_belly" = FALSE,
+		"belly_color" = "fff",
 		"has_balls" = FALSE,
 		"balls_internal" = FALSE,
 		"balls_color" = "fff",
@@ -144,7 +150,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		"balls_cum_rate" = CUM_RATE,
 		"balls_cum_mult" = CUM_RATE_MULT,
 		"balls_efficiency" = CUM_EFFICIENCY,
-		"balls_fluid" = "semen",
+		"balls_fluid" = /datum/reagent/consumable/semen,
 		"has_ovi" = FALSE,
 		"ovi_shape" = "knotted",
 		"ovi_length" = 6,
@@ -159,7 +165,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		"breasts_color" = "fff",
 		"breasts_size" = "C",
 		"breasts_shape" = "Pair",
-		"breasts_fluid" = "milk",
+		"breasts_fluid" = /datum/reagent/consumable/milk,
 		"breasts_producing" = FALSE,
 		"has_vag" = FALSE,
 		"vag_shape" = "Human",
@@ -171,10 +177,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		"womb_cum_rate" = CUM_RATE,
 		"womb_cum_mult" = CUM_RATE_MULT,
 		"womb_efficiency" = CUM_EFFICIENCY,
-		"womb_fluid" = "femcum",
+		"womb_fluid" = /datum/reagent/consumable/femcum,
 		"ipc_screen" = "Sunburst",
 		"ipc_antenna" = "None",
-		"flavor_text" = ""
+		"flavor_text" = "",
+		"silicon_flavor_text" = "",
+		"ooc_text" = ""
 		)
 
 	/// Security record note section
@@ -226,6 +234,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/uplink_spawn_loc = UPLINK_PDA
 
+	var/sprint_spacebar = FALSE
+	var/sprint_toggle = FALSE
+
 	var/list/exp = list()
 	var/list/menuoptions
 
@@ -237,6 +248,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/bgstate_options = list("000", "midgrey", "hiro", "FFF", "white", "steel", "techmaint", "dark", "plating", "reinforced")
 
 	var/show_mismatched_markings = FALSE //determines whether or not the markings lists should show markings that don't match the currently selected species. Intentionally left unsaved.
+	var/hide_ckey = FALSE //pref for hiding if your ckey shows round-end or not
 
 /datum/preferences/New(client/C)
 	parent = C
@@ -280,6 +292,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	dat += "<a href='?_src_=prefs;preference=tab;tab=2' [current_tab == 2 ? "class='linkOn'" : ""]>Character Appearance</a>"
 	dat += "<a href='?_src_=prefs;preference=tab;tab=3' [current_tab == 3 ? "class='linkOn'" : ""]>Loadout</a>"
 	dat += "<a href='?_src_=prefs;preference=tab;tab=1' [current_tab == 1 ? "class='linkOn'" : ""]>Game Preferences</a>"
+	dat += "<a href='?_src_=prefs;preference=tab;tab=4' [current_tab == 4 ? "class='linkOn'" : ""]>Antagonist Preferences</a>"
 
 	if(!path)
 		dat += "<div class='notice'>Please create an account to save your preferences</div>"
@@ -292,26 +305,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	dat += "<HR>"
 
-	switch(current_tab)
-		if (0) // Character Settings#
-			if(path)
-				var/savefile/S = new /savefile(path)
-				if(S)
-					dat += "<center>"
-					var/name
-					var/unspaced_slots = 0
-					for(var/i=1, i<=max_save_slots, i++)
-						unspaced_slots++
-						if(unspaced_slots > 4)
-							dat += "<br>"
-							unspaced_slots = 0
-						S.cd = "/character[i]"
-						S["real_name"] >> name
-						if(!name)
-							name = "+"
-						dat += "<a style='white-space:nowrap;' href='?_src_=prefs;preference=changeslot;num=[i];' [i == default_slot ? "class='linkOn'" : ""]>[name]</a> "
-					dat += "</center>"
+	if(path)	//Show list of characters
+		var/savefile/S = new /savefile(path)
+		if(S)
+			dat += "<center>"
+			var/name
+			var/unspaced_slots = 0
+			for(var/i=1, i<=max_save_slots, i++)
+				unspaced_slots++
+				if(unspaced_slots > 4)
+					dat += "<br>"
+					unspaced_slots = 0
+				S.cd = "/character[i]"
+				S["real_name"] >> name
+				if(!name)
+					name = "+"
+				dat += "<a style='white-space:nowrap;' href='?_src_=prefs;preference=changeslot;num=[i];' [i == default_slot ? "class='linkOn'" : ""]>[name]</a> "
+			dat += "</center>"
 
+	switch(current_tab)
+		if (0) // Character Settings
 			dat += "<center><h2>Occupation Choices</h2>"
 			dat += "<a href='?_src_=prefs;preference=job;task=menu'>Set Occupation Preferences</a><br></center>"
 			if(CONFIG_GET(flag/roundstart_traits))
@@ -365,31 +378,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "[medical_records]"
 			else
 				dat += "[TextPreview(medical_records)]...<BR>"
+			dat += "<br><a href='?_src_=prefs;preference=hide_ckey;task=input'><b>Hide ckey: [hide_ckey ? "Enabled" : "Disabled"]</b></a><br>"
 			dat += "</tr></table>"
 
 		//Character Appearance
 		if(2)
-			if(path)
-				var/savefile/S = new /savefile(path)
-				if(S)
-					dat += "<center>"
-					var/name
-					var/unspaced_slots = 0
-					for(var/i=1, i<=max_save_slots, i++)
-						unspaced_slots++
-						if(unspaced_slots > 4)
-							dat += "<br>"
-							unspaced_slots = 0
-						S.cd = "/character[i]"
-						S["real_name"] >> name
-						if(!name)
-							name = "+"
-						dat += "<a style='white-space:nowrap;' href='?_src_=prefs;preference=changeslot;num=[i];' [i == default_slot ? "class='linkOn'" : ""]>[name]</a> "
-					dat += "</center>"
-
 			update_preview_icon()
 			dat += "<table><tr><td width='340px' height='300px' valign='top'>"
-			dat += "<h2>Flavor Text</h2>"
+			dat += "<h2>General Examine Text</h2>"
 			dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>Set Examine Text</b></a><br>"
 			if(length(features["flavor_text"]) <= 40)
 				if(!length(features["flavor_text"]))
@@ -398,6 +394,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "[features["flavor_text"]]"
 			else
 				dat += "[TextPreview(features["flavor_text"])]...<BR>"
+			dat += "<h2>Silicon Flavor Text</h2>"
+			dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>Set Silicon Examine Text</b></a><br>"
+			if(length(features["silicon_flavor_text"]) <= 40)
+				if(!length(features["silicon_flavor_text"]))
+					dat += "\[...\]"
+				else
+					dat += "[features["silicon_flavor_text"]]"
+			else
+				dat += "[TextPreview(features["silicon_flavor_text"])]...<BR>"
+			dat += "<h2>OOC Text</h2>"
+			dat += "<a href='?_src_=prefs;preference=ooc_text;task=input'><b>Set OOC Text</b></a><br>"
+			if(length(features["ooc_text"]) <= 40)
+				if(!length(features["ooc_text"]))
+					dat += "\[...\]"
+				else
+					dat += "[features["ooc_text"]]"
+			else
+				dat += "[TextPreview(features["ooc_text"])]...<BR>"
+
 			dat += "<h2>Body</h2>"
 			dat += "<b>Gender:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=gender'>[gender == MALE ? "Male" : (gender == FEMALE ? "Female" : (gender == PLURAL ? "Non-binary" : "Object"))]</a><BR>"
 			dat += "<b>Species:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=species;task=input'>[pref_species.id]</a><BR>"
@@ -825,7 +840,22 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<span style='border: 1px solid #161616; background-color: #[features["balls_color"]];'>&nbsp;&nbsp;&nbsp;</span> <a href='?_src_=prefs;preference=balls_color;task=input'>Change</a><br>"
 						//dat += "<b>Ball Circumference:</b> <a style='display:block;width:120px' href='?_src_=prefs;preference=balls_size;task=input'>[features["balls_size"]] inch(es)</a>" // The menu works but doesn't do anything yet. Need to figure it out.
 						dat += "<b>Testicles showing:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_shape;task=input'>[features["balls_shape"]]</a>"
-						dat += "<b>Produces:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>[features["balls_fluid"]]</a>"
+						dat += "<b>Produces:</b>"
+						switch(features["balls_fluid"])
+							if(/datum/reagent/consumable/milk)
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Milk</a>"
+							if(/datum/reagent/water)
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Water</a>"
+							if(/datum/reagent/consumable/semen)
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Semen</a>"
+							if(/datum/reagent/consumable/femcum)
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Femcum</a>"
+							if(/datum/reagent/consumable/alienhoney)
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Honey</a>"
+							else
+								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Nothing?</a>"
+							//This else is a safeguard for errors, and if it happened, they wouldn't be able to change this pref,
+							//DO NOT REMOVE IT UNLESS YOU HAVE A GOOD IDEA
 				dat += APPEARANCE_CATEGORY_COLUMN
 				dat += "<h3>Vagina</h3>"
 				dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=has_vag'>[features["has_vag"] == TRUE ? "Yes" : "No"]</a>"
@@ -855,9 +885,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Breast Shape:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_shape;task=input'>[features["breasts_shape"]]</a>"
 					dat += "<b>Lactates:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_producing'>[features["breasts_producing"] == TRUE ? "Yes" : "No"]</a>"
 					if(features["breasts_producing"] == TRUE)
-<<<<<<< Updated upstream
-						dat += "<b>Produces:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_fluid;task=input'>[features["breasts_fluid"]]</a>"
-=======
 						dat += "<b>Produces:</b>"
 						switch(features["breasts_fluid"])
 							if(/datum/reagent/consumable/milk)
@@ -885,8 +912,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "<b>Color:</b></a><BR>"
 						dat += "<span style='border: 1px solid #161616; background-color: #[features["belly_color"]];'>&nbsp;&nbsp;&nbsp;</span> <a href='?_src_=prefs;preference=belly_color;task=input'>Change</a><br>"
 					dat += "<b>Hide on Round-Start:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=hide_belly'>[features["hide_belly"] == 1 ? "Yes" : "No"]</a>"
-					dat += "<b>Belly Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=belly_size;task=input'>[features["belly_size"]]</a>"
->>>>>>> Stashed changes
 
 				dat += "</td>"
 			dat += "</td>"
@@ -902,6 +927,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			dat += "<b>Chat Bubbles message char limit:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
 			dat += "<b>Chat Bubbles for non-mobs:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? "Enabled" : "Disabled"]</a><br>"
 			dat += "<br>"
+			dat += "<b>Autocorrect:</b> <a href='?_src_=prefs;preference=autocorrect'>[(autocorrect) ? "On" : "Off"]</a><br>"
 			dat += "<b>Radio Sounds:</b> <a href='?_src_=prefs;preference=radiosounds'>[radiosounds ? "Enabled" : "Disabled"]</a><br>"
 			dat += "<br>"
 			dat += "<b>Action Buttons:</b> <a href='?_src_=prefs;preference=action_buttons'>[(buttons_locked) ? "Locked In Place" : "Unlocked"]</a><br>"
@@ -960,7 +986,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			if(jobban_isbanned(user, ROLE_SYNDICATE))
 				dat += "<font color=red><b>You are banned from antagonist roles.</b></font>"
-				src.be_special = list()
+				be_special = list()
 
 
 			for (var/i in GLOB.hyper_special_roles)
@@ -1019,6 +1045,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			dat += "</a><br>"
 			dat += "<b>Ambient Occlusion:</b> <a href='?_src_=prefs;preference=ambientocclusion'>[ambientocclusion ? "Enabled" : "Disabled"]</a><br>"
 			dat += "<b>Fit Viewport:</b> <a href='?_src_=prefs;preference=auto_fit_viewport'>[auto_fit_viewport ? "Auto" : "Manual"]</a><br>"
+			dat += "<b>Sprint Key:</b> <a href='?_src_=prefs;preference=sprint_key'>[sprint_spacebar ? "Space" : "Shift"]</a><br>"
+			dat += "<b>Toggle Sprint:</b> <a href='?_src_=prefs;preference=sprint_toggle'>[sprint_toggle ? "Enabled" : "Disabled"]</a><br>"
 
 			if (CONFIG_GET(flag/maprotation) && CONFIG_GET(flag/tgstyle_maprotation))
 				var/p_map = preferred_map
@@ -1037,40 +1065,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						p_map += " (No longer exists)"
 				if(CONFIG_GET(flag/allow_map_voting))
 					dat += "<b>Preferred Map:</b> <a href='?_src_=prefs;preference=preferred_map;task=input'>[p_map]</a><br>"
-
-			dat += "</td><td width='300px' height='300px' valign='top'>"
-
-			dat += "<h2>Special Role Settings</h2>"
-
-			if(jobban_isbanned(user, ROLE_SYNDICATE))
-				dat += "<font color=red><b>You are banned from antagonist roles.</b></font>"
-				src.be_special = list()
-
-
-			for (var/i in GLOB.special_roles)
-				if(jobban_isbanned(user, i))
-					dat += "<b>Be [capitalize(i)]:</b> <a href='?_src_=prefs;jobbancheck=[i]'>BANNED</a><br>"
-				else
-					var/days_remaining = null
-					if(ispath(GLOB.special_roles[i]) && CONFIG_GET(flag/use_age_restriction_for_jobs)) //If it's a game mode antag, check if the player meets the minimum age
-						var/mode_path = GLOB.special_roles[i]
-						var/datum/game_mode/temp_mode = new mode_path
-						days_remaining = temp_mode.get_remaining_days(user.client)
-
-					if(days_remaining)
-						dat += "<b>Be [capitalize(i)]:</b> <font color=red> \[IN [days_remaining] DAYS]</font><br>"
-					else
-						dat += "<b>Be [capitalize(i)]:</b> <a href='?_src_=prefs;preference=be_special;be_special_type=[i]'>[(i in be_special) ? "Enabled" : "Disabled"]</a><br>"
-			dat += "<b>Midround Antagonist:</b> <a href='?_src_=prefs;preference=allow_midround_antag'>[(toggles & MIDROUND_ANTAG) ? "Enabled" : "Disabled"]</a><br>"
-
 			dat += "<br>"
 
-		if(3)
+		if(3)	//Item Loadout
 			if(!gear_tab)
 				gear_tab = GLOB.loadout_items[1]
 			dat += "<table align='center' width='100%'>"
-			dat += "<tr><td colspan=4><center><b><font color='[gear_points == 0 ? "#E62100" : "#CCDDFF"]'>[gear_points]</font> loadout points remaining.</b> \[<a href='?_src_=prefs;preference=gear;clear_loadout=1'>Clear Loadout</a>\]</center></td></tr>"
-			dat += "<tr><td colspan=4><center>You can only choose one item per category, unless it's an item that spawns in your backpack or hands.</center></td></tr>"
+			dat += "<tr><td colspan=4><center><b><font color='[gear_points == 0 ? "#E62100" : "#CCDDFF"]'>[gear_points]</font> loadout points remaining.</b> \[<a href='?_src_=prefs;preference=gear;clear_loadout=1'>Clear Loadout</a>\] \[<a href='?_src_=prefs;preference=gear;toggle_outfit_visibility=1'>[preview_job_outfit ? "Enable" : "Disable"] Job Outfit Preview</a>\]</center></td></tr>"
+			dat += "<tr><td colspan=4><center>You can only choose two items per category, unless it's an item that spawns in your backpack or hands.</center></td></tr>"
 			dat += "<tr><td colspan=4><center><b>"
 			var/firstcat = TRUE
 			for(var/i in GLOB.loadout_items)
@@ -1120,6 +1122,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "</font>"
 				dat += "</td><td><font size=2><i>[gear.description]</i></font></td></tr>"
 			dat += "</table>"
+
+		if(4)		//Antag Preferences
+			dat += "<table><tr><td width='340px' height='300px' valign='top'>"
+			dat += "<h1>Special Role Settings</h1>"
+			if(jobban_isbanned(user, ROLE_SYNDICATE))
+				dat += "<font color=red><h3><b>You are banned from antagonist roles.</b></h3></font>"
+				be_special = list()
+
+			for (var/i in GLOB.special_roles)
+				if(jobban_isbanned(user, i))
+					dat += "<b>Be [capitalize(i)]:</b> <a href='?_src_=prefs;jobbancheck=[i]'>BANNED</a><br>"
+				else
+					var/days_remaining = null
+					if(ispath(GLOB.special_roles[i]) && CONFIG_GET(flag/use_age_restriction_for_jobs)) //If it's a game mode antag, check if the player meets the minimum age
+						var/mode_path = GLOB.special_roles[i]
+						var/datum/game_mode/temp_mode = new mode_path
+						days_remaining = temp_mode.get_remaining_days(user.client)
+
+					if(days_remaining)
+						dat += "<b>Be [capitalize(i)]:</b> <font color=red> \[IN [days_remaining] DAYS]</font><br>"
+					else
+						dat += "<b>Be [capitalize(i)]:</b> <a href='?_src_=prefs;preference=be_special;be_special_type=[i]'>[(i in be_special) ? "Enabled" : "Disabled"]</a><br>"
+			dat += "<b>Midround Antagonist:</b> <a href='?_src_=prefs;preference=allow_midround_antag'>[(toggles & MIDROUND_ANTAG) ? "Enabled" : "Disabled"]</a><br>"
+			dat += "</td><td width='340px' height='300px' valign='top'>"
+			dat += "<h1>Sync Settings</h1>"
+			dat += "<b>Sync</b> antag prefs. with all characters: <a href='?_src_=prefs;preference=sync_antag_with_chars'>[(toggles & ANTAG_SYNC_WITH_CHARS) ? "Yes" : "No"]</a><br>"
+			dat += "<b>Copy</b> and save antag prefs. to all characters: <a href='?_src_=prefs;preference=copy_antag_to_chars'>Copy</a><br>"
+			dat += "<b>Reset</b> antag prefs. for this character: <a href='?_src_=prefs;preference=reset_antag'>Reset</a><br>"
+			dat += "</td></tr></table>"
+
 
 	dat += "<hr><center>"
 
@@ -1662,7 +1694,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("name")
 					var/new_name = input(user, "Choose your character's name:", "Character Preference")  as text|null
 					if(new_name)
-						new_name = reject_bad_name(new_name)
+						new_name = reject_bad_name(new_name, TRUE)
 						if(new_name)
 							real_name = new_name
 						else
@@ -1684,10 +1716,28 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						medical_records = rec
 
 				if("flavor_text")
-					var/msg = stripped_multiline_input(usr, "Set the flavor text in your 'examine' verb. This can also be used for OOC notes and preferences!", "Flavor Text", html_decode(features["flavor_text"]), MAX_MESSAGE_LEN*2, TRUE)
-					if(!isnull(msg))
-						msg = copytext(msg, 1, MAX_MESSAGE_LEN*2)
+					var/msg = stripped_multiline_input(usr, "Set the flavor text in your 'examine' verb. This should be IC, and description people can deduce at a quick glance.", "Flavor Text", html_decode(features["flavor_text"]), MAX_MESSAGE_LEN, TRUE)
+					if(msg)
+						msg = msg
 						features["flavor_text"] = msg
+
+				if("silicon_flavor_text")
+					var/msg = stripped_multiline_input(usr, "Set the silicon flavor text in your 'examine' verb. This can also be used for OOC notes and preferences!", "Silicon Flavor Text", features["silicon_flavor_text"], MAX_FLAVOR_LEN, TRUE)
+					if(msg)
+						msg = msg
+						features["silicon_flavor_text"] = msg
+
+				if("ooc_text")
+					var/msg = stripped_multiline_input(usr, "Set the OOC text in your 'examine' verb. This should be OOC only!", "OOC Text", html_decode(features["ooc_text"]), MAX_MESSAGE_LEN, TRUE)
+					if(msg)
+						msg = msg
+						features["ooc_text"] = msg
+
+
+				if("hide_ckey")
+					hide_ckey = !hide_ckey
+					if(user)
+						user.mind?.hide_ckey = hide_ckey
 
 				if("hair")
 					var/new_hair = input(user, "Choose your character's hair colour:", "Character Preference","#"+hair_color) as color|null
@@ -2159,6 +2209,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						else
 							to_chat(user,"<span class='danger'>Invalid color. Your color is not bright enough.</span>")
 
+				if("belly_color")
+					var/new_bellycolor = input(user, "Belly Color:", "Character Preference") as color|null
+					if(new_bellycolor)
+						var/temp_hsv = RGBtoHSV(new_bellycolor)
+						if(new_bellycolor == "#000000")
+							features["belly_color"] = pref_species.default_color
+						else if((MUTCOLORS_PARTSONLY in pref_species.species_traits) || ReadHSV(temp_hsv)[3] >= ReadHSV("#202020")[3])
+							features["belly_color"] = sanitize_hexcolor(new_bellycolor)
+						else
+							to_chat(user,"<span class='danger'>Invalid color. Your color is not bright enough.</span>")
+
 				if("balls_shape")
 					var/new_shape
 					new_shape = input(user, "Testicle Type:", "Character Preference") as null|anything in GLOB.balls_shapes_list
@@ -2168,8 +2229,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("balls_fluid")
 					var/new_shape
 					new_shape = input(user, "Balls Fluid", "Character Preference") as null|anything in GLOB.genital_fluids_list
-					if(new_shape)
-						features["balls_fluid"] = new_shape
+					switch(new_shape)
+						if("Milk")
+							features["balls_fluid"] = /datum/reagent/consumable/milk
+						if("Water")
+							features["balls_fluid"] = /datum/reagent/water
+						if("Semen")
+							features["balls_fluid"] = /datum/reagent/consumable/semen
+						if("Femcum")
+							features["balls_fluid"] = /datum/reagent/consumable/femcum
+						if("Honey")
+							features["balls_fluid"] = /datum/reagent/consumable/alienhoney
 
 				if("egg_size")
 					var/new_size
@@ -2193,12 +2263,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(new_size)
 						features["breasts_size"] = new_size
 
-				if("belly_size")
-					var/new_size
-					new_size = input(user, "Belly Size", "Character Preference") as null|anything in GLOB.breasts_size_list
-					if(new_size)
-						features["belly_size"] = new_size
-
 				if("breasts_shape")
 					var/new_shape
 					new_shape = input(user, "Breast Shape", "Character Preference") as null|anything in GLOB.breasts_shapes_list
@@ -2208,8 +2272,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("breasts_fluid")
 					var/new_shape
 					new_shape = input(user, "Breast Fluid", "Character Preference") as null|anything in GLOB.genital_fluids_list
-					if(new_shape)
-						features["breasts_fluid"] = new_shape
+					switch(new_shape)
+						if("Milk")
+							features["breasts_fluid"] = /datum/reagent/consumable/milk
+						if("Water")
+							features["breasts_fluid"] = /datum/reagent/water
+						if("Semen")
+							features["breasts_fluid"] = /datum/reagent/consumable/semen
+						if("Femcum")
+							features["breasts_fluid"] = /datum/reagent/consumable/femcum
+						if("Honey")
+							features["breasts_fluid"] = /datum/reagent/consumable/alienhoney
 
 				if("breasts_color")
 					var/new_breasts_color = input(user, "Breast Color:", "Character Preference") as color|null
@@ -2352,6 +2425,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					features["has_cock"] = !features["has_cock"]
 					if(features["has_cock"] == FALSE)
 						features["has_balls"] = FALSE
+				if("has_belly")
+					features["has_belly"] = !features["has_belly"]
+					if(features["has_belly"] == FALSE)
+						features["hide_belly"] = FALSE
+				if("hide_belly")
+					features["hide_belly"] = !features["hide_belly"]
 				if("has_balls")
 					features["has_balls"] = !features["has_balls"]
 				if("has_ovi")
@@ -2425,6 +2504,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					buttons_locked = !buttons_locked
 				if("chat_on_map")
 					chat_on_map = !chat_on_map
+				if("autocorrect")
+					autocorrect = !autocorrect
 				if("radiosounds")
 					radiosounds = !radiosounds
 				if("see_chat_non_mob")
@@ -2445,9 +2526,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("be_special")
 					var/be_special_type = href_list["be_special_type"]
 					if(be_special_type in be_special)
-						be_special -= be_special_type
+						be_special -= list(be_special_type)
 					else
-						be_special += be_special_type
+						be_special += list(be_special_type)
 
 				if("name")
 					be_random_name = !be_random_name
@@ -2486,6 +2567,30 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("allow_midround_antag")
 					toggles ^= MIDROUND_ANTAG
 
+				if("sync_antag_with_chars")
+					toggles ^= ANTAG_SYNC_WITH_CHARS
+					if(!(toggles & ANTAG_SYNC_WITH_CHARS) && path)
+						var/savefile/S = new /savefile(path)
+						if(S)
+							S["special_roles"] >> be_special
+
+				if("copy_antag_to_chars")
+					if(path)
+						var/savefile/S = new /savefile(path)
+						if(S)
+							var/initial_cd = S.cd
+							for(var/i=1, i<=max_save_slots, i++)
+								S.cd = "/character[i]"
+								if(S["real_name"])
+									WRITE_FILE(S["special_roles"], be_special)
+							S.cd = initial_cd
+							to_chat(parent, "<span class='notice'>Successfully copied antagonist preferences to all characters.</span>")
+						else
+							to_chat(parent, "<span class='notice'>Could not write to file.</span>")
+
+				if("reset_antag")
+					be_special = list()
+
 				if("parallaxup")
 					parallax = WRAP(parallax + 1, PARALLAX_INSANE, PARALLAX_DISABLE + 1)
 					if (parent && parent.mob && parent.mob.hud_used)
@@ -2517,6 +2622,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					auto_fit_viewport = !auto_fit_viewport
 					if(auto_fit_viewport && parent)
 						parent.fit_viewport()
+
+				if("sprint_key")
+					sprint_spacebar = !sprint_spacebar
+
+				if("sprint_toggle")
+					sprint_toggle = !sprint_toggle
 
 				if("save")
 					save_preferences()
@@ -2566,6 +2677,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if(gear_points >= initial(G.cost))
 					LAZYADD(chosen_gear, G.type)
 					gear_points -= initial(G.cost)
+		if(href_list["toggle_outfit_visibility"])
+			preview_job_outfit = !preview_job_outfit
 
 	ShowChoices(user)
 	return 1
@@ -2656,6 +2769,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		character.Digitigrade_Leg_Swap(FALSE)
 	else
 		character.Digitigrade_Leg_Swap(TRUE)
+
+	SEND_SIGNAL(character, COMSIG_HUMAN_PREFS_COPIED_TO, src, icon_updates, roundstart_checks)
 
 	//speech stuff
 	if(custom_tongue != "default")

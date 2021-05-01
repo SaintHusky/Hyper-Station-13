@@ -402,6 +402,7 @@ SUBSYSTEM_DEF(ticker)
 			if(living.client)
 				var/obj/screen/splash/S = new(living.client, TRUE)
 				S.Fade(TRUE)
+				living.client.init_verbs()
 			livings += living
 	if(livings.len)
 		addtimer(CALLBACK(src, .proc/release_characters, livings), 30, TIMER_CLIENT_TIME)
@@ -534,7 +535,7 @@ SUBSYSTEM_DEF(ticker)
 
 /datum/controller/subsystem/ticker/proc/send_news_report()
 	var/news_message
-	var/news_source = "Nanotrasen News Network"
+	var/news_source = "Kinaris News Network"
 	switch(news_report)
 		if(NUKE_SYNDICATE_BASE)
 			news_message = "In a daring raid, the heroic crew of [station_name()] detonated a nuclear device in the heart of a terrorist base."
@@ -677,7 +678,7 @@ SUBSYSTEM_DEF(ticker)
 	if(!round_end_sound)
 		round_end_sound = pick(\
 		'sound/roundend/iwishtherewassomethingmore.ogg',
-		'sound/roundend/likeisaid.ogg',	
+		'sound/roundend/likeisaid.ogg',
 		'sound/roundend/whatarottenwaytodie.ogg',
 		'sound/roundend/whatashame.ogg',
 		'sound/roundend/newroundsexy.ogg',

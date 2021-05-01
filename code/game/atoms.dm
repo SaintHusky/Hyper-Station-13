@@ -44,6 +44,7 @@
 	var/rad_insulation = RAD_NO_INSULATION
 
 	var/icon/blood_splatter_icon
+	var/icon/cum_splatter_icon
 	var/list/fingerprints
 	var/list/fingerprintshidden
 	var/list/blood_DNA
@@ -52,7 +53,7 @@
 /atom/New(loc, ...)
 	//atom creation method that preloads variables at creation
 	if(GLOB.use_preloader && (src.type == GLOB._preloader.target_path))//in case the instanciated atom is creating other atoms in New()
-		GLOB._preloader.load(src)
+		world.preloader_load(src)
 
 	if(datum_flags & DF_USE_TAG)
 		GenerateTag()
@@ -313,7 +314,10 @@
 
 /atom/proc/examine(mob/user)
 	. = list("[get_examine_string(user, TRUE)].")
-	
+
+	if(!isliving(src))
+		user.visible_message("<span class='notice'>[user] examines [src].</span>",\
+						"<span class='notice'>You examine [src].</span>")
 	if(desc)
 		. += desc
 
@@ -343,9 +347,6 @@
 		buckle_message_cooldown = world.time + 50
 		to_chat(user, "<span class='warning'>You can't move while buckled to [src]!</span>")
 	return
-
-/atom/proc/prevent_content_explosion()
-	return FALSE
 
 /atom/proc/contents_explosion(severity, target)
 	return //For handling the effects of explosions on contents that would not normally be effected
@@ -377,13 +378,13 @@
 //returns the mob's dna info as a list, to be inserted in an object's blood_DNA list
 /mob/living/proc/get_blood_dna_list()
 	var/blood_id = get_blood_id()
-	if(!(blood_id =="blood" || blood_id == "jellyblood"))
+	if(!(blood_id in GLOB.blood_reagent_types))
 		return
 	return list("ANIMAL DNA" = "Y-")
 
 /mob/living/carbon/get_blood_dna_list()
 	var/blood_id = get_blood_id()
-	if(!(blood_id =="blood" || blood_id == "jellyblood"))
+	if(!(blood_id in GLOB.blood_reagent_types))
 		return
 	var/list/blood_dna = list()
 	if(dna)
@@ -687,7 +688,7 @@
 	var/atom/L = loc
 	if(!L)
 		return null
-	return L.AllowDrop() ? L : get_turf(L)
+	return L.AllowDrop() ? L : L.drop_location()
 
 /atom/Entered(atom/movable/AM, atom/oldLoc)
 	SEND_SIGNAL(src, COMSIG_ATOM_ENTERED, AM, oldLoc)
@@ -729,6 +730,13 @@
 
 /atom/proc/multitool_act(mob/living/user, obj/item/I)
 	return
+
+/atom/proc/multitool_check_buffer(user, obj/item/I, silent = FALSE)
+	if(!istype(I, /obj/item/multitool))
+		if(user && !silent)
+			to_chat(user, "<span class='warning'>[I] has no data buffer!</span>")
+		return FALSE
+	return TRUE
 
 /atom/proc/screwdriver_act(mob/living/user, obj/item/I)
 	SEND_SIGNAL(src, COMSIG_ATOM_SCREWDRIVER_ACT, user, I)
@@ -856,14 +864,34 @@ Proc for attack log creation, because really why not
 		filters += filter(arglist(arguments))
 
 /atom/movable/proc/get_filter(name)
-	if(filter_data && filter_data[name])
-		return filters[filter_data.Find(name)]
+	if(filter_data)
+		if(filter_data[name])
+			return filters[filter_data.Find(name)]
 
 /atom/movable/proc/remove_filter(name)
-	if(filter_data[name])
-		filter_data -= name
-		update_filters()
-		return TRUE
+	if(filter_data)
+		if(filter_data[name])
+			filter_data -= name
+			update_filters()
+			return TRUE
 
 /atom/proc/intercept_zImpact(atom/movable/AM, levels = 1)
-	. |= SEND_SIGNAL(src, COMSIG_ATOM_INTERCEPT_Z_FALL, AM, levels) 
+	. |= SEND_SIGNAL(src, COMSIG_ATOM_INTERCEPT_Z_FALL, AM, levels)
+
+///Passes Stat Browser Panel clicks to the game and calls client click on an atom
+/atom/Topic(href, list/href_list)
+	. = ..()
+	if(!usr?.client)
+		return
+	var/client/usr_client = usr.client
+	var/list/paramslist = list()
+	if(href_list["statpanel_item_shiftclick"])
+		paramslist["shift"] = "1"
+	if(href_list["statpanel_item_ctrlclick"])
+		paramslist["ctrl"] = "1"
+	if(href_list["statpanel_item_altclick"])
+		paramslist["alt"] = "1"
+	if(href_list["statpanel_item_click"])
+		// first of all make sure we valid
+		var/mouseparams = list2params(paramslist)
+		usr_client.Click(src, loc, null, mouseparams)

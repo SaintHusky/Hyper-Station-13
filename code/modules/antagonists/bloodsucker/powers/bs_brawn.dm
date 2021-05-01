@@ -69,12 +69,12 @@
 		var/hitStrength = user_C.dna.species.punchdamagehigh * 2.0 + 5
 		// Knockdown!
 		var/powerlevel = min(5, 1 + level_current)
-		if(rand(5 + powerlevel) >= 5)
-			target.visible_message("<span class='danger'>[user] lands a vicious punch, sending [target] away!</span>", \
+		target.visible_message("<span class='danger'>[user] lands a vicious punch, sending [target] away!</span>", \
 							  "<span class='userdanger'>[user] has landed a horrifying punch on you, sending you flying!!</span>", null, COMBAT_MESSAGE_RANGE)
+		if(rand(0, 5 + powerlevel) >= 5)
 			target.Knockdown(min(5, rand(10, 10 * powerlevel)) )
 			// Chance of KO
-			if(rand(6 + powerlevel) >= 6  && target.stat <= UNCONSCIOUS)
+			if(rand(0, 6 + powerlevel) >= 6  && target.stat <= UNCONSCIOUS)
 				target.Unconscious(40)
 		// Attack!
 		playsound(get_turf(target), 'sound/weapons/punch4.ogg', 60, 1, -1)
@@ -110,7 +110,7 @@
 	if(user_C.handcuffed)
 		var/obj/O = user_C.get_item_by_slot(SLOT_HANDCUFFED)
 		if(istype(O))
-			//user_C.visible_message("<span class='warning'>[user_C] attempts to remove [O]!</span>", \
+			//user_C.visible_message("<span class='warning'>[user_C] attempts to remove [O]!</span>", 
 			//					 "<span class='warning'>You snap [O] like it's nothing!</span>")
 			user_C.clear_cuffs(O,TRUE)
 			playsound(get_turf(usr), 'sound/effects/grillehit.ogg', 80, 1, -1)
@@ -122,7 +122,7 @@
 		if(user_H.wear_suit && user_H.wear_suit.breakouttime)
 			var/obj/item/clothing/suit/straight_jacket/S = user_H.get_item_by_slot(ITEM_SLOT_ICLOTHING)
 			if(istype(S))
-				user_C.visible_message("<span class='warning'>[user_C] attempts to remove [S]!</span>", \
+				user_C.visible_message("<span class='warning'>[user_C] attempts to remove [S]!</span>", 
 						 			"<span class='warning'>You rip through [S] like it's nothing!</span>")
 				user_C.clear_cuffs(S,TRUE)
 				playsound(get_turf(usr), 'sound/effects/grillehit.ogg', 80, 1, -1)
@@ -131,7 +131,7 @@
 	if(user_C.legcuffed)
 		var/obj/O = user_C.get_item_by_slot(SLOT_LEGCUFFED)
 		if(istype(O))
-			//user_C.visible_message("<span class='warning'>[user_C] attempts to remove [O]!</span>", \
+			//user_C.visible_message("<span class='warning'>[user_C] attempts to remove [O]!</span>", 
 			//					 "<span class='warning'>You snap [O] like it's nothing!</span>")
 			user_C.clear_cuffs(O,TRUE)
 			playsound(get_turf(usr), 'sound/effects/grillehit.ogg', 80, 1, -1)

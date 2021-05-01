@@ -27,8 +27,8 @@
 	var/mob_storage_capacity = 3 // how many human sized mob/living can fit together inside a closet.
 	var/storage_capacity = 30 //This is so that someone can't pack hundreds of items in a locker/crate then open it in a populated area to crash clients.
 	var/cutting_tool = /obj/item/weldingtool
-	var/open_sound = 'sound/machines/click.ogg'
-	var/close_sound = 'sound/machines/click.ogg'
+	var/open_sound = 'sound/effects/locker_open.ogg'
+	var/close_sound = 'sound/effects/locker_close.ogg'
 	var/material_drop = /obj/item/stack/sheet/metal
 	var/material_drop_amount = 2
 	var/delivery_icon = "deliverycloset" //which icon to use when packagewrapped. null to be unwrappable.
@@ -527,11 +527,12 @@
 			to_chat(user, "<span class='warning'>You fail to break out of [src]!</span>")
 
 /obj/structure/closet/AltClick(mob/user)
-	..()
+	. = ..()
 	if(!user.canUseTopic(src, be_close=TRUE) || !isturf(loc))
 		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
-		return
+		return TRUE
 	togglelock(user)
+	return TRUE
 
 /obj/structure/closet/CtrlShiftClick(mob/living/user)
 	if(!HAS_TRAIT(user, TRAIT_SKITTISH))

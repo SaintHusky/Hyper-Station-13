@@ -21,6 +21,10 @@
 	resistance_flags = FLAMMABLE
 	max_integrity = 50
 	dog_fashion = /datum/dog_fashion/head
+	grind_results = list(/datum/reagent/cellulose = 2)
+
+	drop_sound = 'sound/items/handling/paper_drop.ogg'
+	pickup_sound =  'sound/items/handling/paper_pickup.ogg'
 
 	var/info		//What's actually written on the paper.
 	var/info_links	//A different version of the paper which includes html links at fields and EOF
@@ -32,6 +36,7 @@
 	var/contact_poison // Reagent ID to transfer on contact
 	var/contact_poison_volume = 0
 	var/datum/oracle_ui/ui = null
+	var/force_stars = FALSE // If we should force the text to get obfuscated with asterisks
 
 
 /obj/item/paper/pickup(user)
@@ -59,7 +64,8 @@
 	updateinfolinks()
 
 /obj/item/paper/oui_getcontent(mob/target)
-	if(!target.is_literate())
+	if(!target.is_literate() || force_stars)
+		force_stars = FALSE
 		return "<HTML><HEAD><TITLE>[name]</TITLE></HEAD><BODY>[stars(info)]<HR>[stamps]</BODY></HTML>"
 	else if(istype(target.get_active_held_item(), /obj/item/pen) | istype(target.get_active_held_item(), /obj/item/toy/crayon))
 		return "<HTML><HEAD><TITLE>[name]</TITLE></HEAD><BODY>[info_links]<HR>[stamps]</BODY><div align='right'style='position:fixed;bottom:0;font-style:bold;'><A href='?src=[REF(src)];help=1'>\[?\]</A></div></HTML>"
@@ -70,8 +76,8 @@
 	if(check_rights_for(target.client, R_FUN)) //Allows admins to view faxes
 		return TRUE
 	if(isAI(target))
-		var/mob/living/silicon/ai/ai = target
-		return get_dist(src, ai.current) < 2
+		force_stars = TRUE
+		return TRUE
 	if(iscyborg(target))
 		return get_dist(src, target) < 2
 	return ..()
@@ -90,7 +96,7 @@
 /obj/item/paper/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Alt-click to fold it.</span>"
-	if(oui_canview(user))
+	if((in_range(user, src)))
 		ui.render(user)
 	else
 		. += "<span class='warning'>You're too far away to read it!</span>"
@@ -133,23 +139,14 @@
 			playsound(loc, 'sound/items/bikehorn.ogg', 50, 1)
 			addtimer(CALLBACK(src, .proc/reset_spamflag), 20)
 
-
 /obj/item/paper/attack_ai(mob/living/silicon/ai/user)
-	var/dist
-	if(istype(user) && user.current) //is AI
-		dist = get_dist(src, user.current)
-	else //cyborg or AI not seeing through a camera
-		dist = get_dist(src, user)
-	if(dist < 2)
-		show_content(user)
-	else
-		to_chat(user, "<span class='notice'>You can't quite see it.</span>")
-
+	show_content(user)
 
 /obj/item/paper/proc/addtofield(id, text, links = 0)
 	var/locid = 0
 	var/laststart = 1
 	var/textindex = 1
+	playsound(src, 'sound/items/handling/writing.ogg', 50, 1, -1)
 	while(locid < 15)	//hey whoever decided a while(1) was a good idea here, i hate you
 		var/istart = 0
 		if(links)
@@ -160,7 +157,10 @@
 		if(istart == 0)
 			return	//No field found with matching id
 
-		laststart = istart+1
+		if(links)
+			laststart = istart + length(info_links[istart])
+		else
+			laststart = istart + length(info[istart])
 		locid++
 		if(locid == id)
 			var/iend = 1

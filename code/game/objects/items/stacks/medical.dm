@@ -127,7 +127,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	heal_brute = 40
 	self_delay = 20
-	grind_results = list("styptic_powder" = 10)
+	grind_results = list(/datum/reagent/medicine/styptic_powder = 10)
 
 /obj/item/stack/medical/bruise_pack/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is bludgeoning [user.p_them()]self with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -142,6 +142,7 @@
 	stop_bleeding = 1800
 	self_delay = 20
 	max_amount = 12
+	grind_results = list(/datum/reagent/cellulose = 3)
 
 
 /obj/item/stack/medical/gauze/attackby(obj/item/I, mob/user, params)
@@ -182,7 +183,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	heal_burn = 40
 	self_delay = 20
-	grind_results = list("silver_sulfadiazine" = 10)
+	grind_results = list(/datum/reagent/medicine/silver_sulfadiazine = 10)
 
 /obj/item/stack/medical/ointment/suicide_act(mob/living/user)
 	user.visible_message("<span class='suicide'>[user] is squeezing \the [src] into [user.p_their()] mouth! [user.p_do(TRUE)]n't [user.p_they()] know that stuff is toxic?</span>")
@@ -190,3 +191,16 @@
 
 /obj/item/stack/medical/get_belt_overlay()
 	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "pouch")
+
+/obj/item/stack/medical/aloe
+	name = "aloe cream"
+	desc = "A healing paste you can apply on wounds."
+
+	icon_state = "aloe_paste"
+	self_delay = 25
+	novariants = TRUE
+	amount = 20
+	max_amount = 20
+	heal_brute = 25
+	heal_burn = 30
+	grind_results = list(/datum/reagent/consumable/aloejuice = 1)

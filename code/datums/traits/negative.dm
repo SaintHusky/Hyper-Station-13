@@ -314,7 +314,7 @@
 	medical_record_text = "Patient suffers from acute Reality Dissociation Syndrome and experiences vivid hallucinations."
 
 /datum/quirk/insanity/on_process()
-	if(quirk_holder.reagents.has_reagent("mindbreaker"))
+	if(quirk_holder.reagents.has_reagent(/datum/reagent/toxin/mindbreaker))
 		quirk_holder.hallucination = 0
 		return
 	if(prob(2)) //we'll all be mad soon enough
@@ -366,9 +366,11 @@
 	var/mob/living/carbon/human/H = quirk_holder
 	if(prob(2 + nearby_people))
 		H.stuttering = max(3, H.stuttering)
-	else if(prob(min(3, nearby_people)) && !H.silent)
-		to_chat(H, "<span class='danger'>You retreat into yourself. You <i>really</i> don't feel up to talking.</span>")
-		H.silent = max(10, H.silent)
+	else if(prob(min(3, nearby_people)) && !H.jitteriness)
+		if (nearby_people > 3) //4 or more people around you is required for you to panic.
+			to_chat(H, "<span class='danger'>You start to panic internally. There are too many people around you!</span>")
+			H.jitteriness = max(5, H.jitteriness)
+			H.stuttering = max(3, H.stuttering)
 	else if(prob(0.5) && dumb_thing)
 		to_chat(H, "<span class='userdanger'>You think of a dumb thing you said a long time ago and scream internally.</span>")
 		dumb_thing = FALSE //only once per life
@@ -384,10 +386,14 @@
 	medical_record_text = "Patient has an extreme or irrational fear and aversion to an undefined stimuli."
 	var/datum/brain_trauma/mild/phobia/phobia
 
-/datum/quirk/phobia/add()
+/datum/quirk/phobia/post_add()
 	var/mob/living/carbon/human/H = quirk_holder
 	phobia = new
-	H.gain_trauma(phobia, TRAUMA_RESILIENCE_SURGERY)
+	H.gain_trauma(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+
+/datum/quirk/phobia/remove()
+	var/mob/living/carbon/human/H = quirk_holder
+	H?.cure_trauma_type(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
 
 /datum/quirk/mute
 	name = "Mute"

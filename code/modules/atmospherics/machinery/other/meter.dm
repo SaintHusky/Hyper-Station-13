@@ -55,7 +55,7 @@
 	PIPING_LAYER_DOUBLE_SHIFT(src, target_layer)
 
 /obj/machinery/meter/process_atmos()
-	if(!target)
+	if(!(target?.flags_1 & INITIALIZED_1))
 		icon_state = "meterX"
 		return 0
 
@@ -134,6 +134,9 @@
 	else
 		to_chat(user, status())
 
+/obj/machinery/meter/attack_ghost(mob/user)
+	to_chat(user, status())
+
 /obj/machinery/meter/singularity_pull(S, current_size)
 	..()
 	if(current_size >= STAGE_FIVE)
@@ -141,6 +144,7 @@
 
 // TURF METER - REPORTS A TILE'S AIR CONTENTS
 //	why are you yelling?
+//   i hope they aren't mad
 /obj/machinery/meter/turf
 
 /obj/machinery/meter/turf/reattach_to_layer()

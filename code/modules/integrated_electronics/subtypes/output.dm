@@ -174,43 +174,6 @@
 		)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 
-/obj/item/integrated_circuit/output/sound/beepsky
-	name = "securitron sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is similar to those used in Securitrons."
-	sounds = list(
-		"creep"			= 'sound/voice/beepsky/creep.ogg',
-		"criminal"		= 'sound/voice/beepsky/criminal.ogg',
-		"freeze"		= 'sound/voice/beepsky/freeze.ogg',
-		"god"			= 'sound/voice/beepsky/god.ogg',
-		"i am the law"	= 'sound/voice/beepsky/iamthelaw.ogg',
-		"insult"		= 'sound/voice/beepsky/insult.ogg',
-		"radio"			= 'sound/voice/beepsky/radio.ogg',
-		"secure day"	= 'sound/voice/beepsky/secureday.ogg',
-		)
-	spawn_flags = IC_SPAWN_RESEARCH
-
-/obj/item/integrated_circuit/output/sound/medbot
-	name = "medbot sound circuit"
-	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in medical robots."
-	sounds = list(
-		"surgeon"		= 'sound/voice/medbot/surgeon.ogg',
-		"radar"			= 'sound/voice/medbot/radar.ogg',
-		"feel better"	= 'sound/voice/medbot/feelbetter.ogg',
-		"patched up"	= 'sound/voice/medbot/patchedup.ogg',
-		"injured"		= 'sound/voice/medbot/injured.ogg',
-		"insult"		= 'sound/voice/medbot/insult.ogg',
-		"coming"		= 'sound/voice/medbot/coming.ogg',
-		"help"			= 'sound/voice/medbot/help.ogg',
-		"live"			= 'sound/voice/medbot/live.ogg',
-		"lost"			= 'sound/voice/medbot/lost.ogg',
-		"flies"			= 'sound/voice/medbot/flies.ogg',
-		"catch"			= 'sound/voice/medbot/catch.ogg',
-		"delicious"		= 'sound/voice/medbot/delicious.ogg',
-		"apple"			= 'sound/voice/medbot/apple.ogg',
-		"no"			= 'sound/voice/medbot/no.ogg',
-		)
-	spawn_flags = IC_SPAWN_RESEARCH
-
 /obj/item/integrated_circuit/output/sound/vox
 	name = "ai vox sound circuit"
 	desc = "Takes a sound name as an input, and will play said sound when pulsed. This circuit is often found in AI announcement systems."
@@ -228,7 +191,7 @@
 	icon_state = "speaker"
 	cooldown_per_use = 10
 	complexity = 12
-	inputs = list("text" = IC_PINTYPE_STRING)
+	inputs = list("text" = IC_PINTYPE_STRING, "speech verb" = IC_PINTYPE_STRING)
 	outputs = list()
 	activators = list("to speech" = IC_PINTYPE_PULSE_IN)
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -236,14 +199,18 @@
 
 /obj/item/integrated_circuit/output/text_to_speech/do_work()
 	text = get_pin_data(IC_INPUT, 1)
+	var/say_verb = get_pin_data(IC_INPUT, 2)
 	if(!isnull(text))
 		var/atom/movable/A = get_object()
 		var/sanitized_text = sanitize(text)
-		A.say(sanitized_text)
+		var/sanitized_verb = sanitize(say_verb)
 		if (assembly)
+			if(!isnull(sanitized_verb))
+				A.verb_say = sanitized_verb
 			log_say("[assembly] [REF(assembly)] : [sanitized_text]")
 		else
 			log_say("[name] ([type]) : [sanitized_text]")
+		A.say(sanitized_text)
 
 /obj/item/integrated_circuit/output/video_camera
 	name = "video camera circuit"

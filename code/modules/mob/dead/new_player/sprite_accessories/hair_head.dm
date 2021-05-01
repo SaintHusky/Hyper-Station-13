@@ -185,7 +185,7 @@
 	name = "Flat Top (Big)"
 	icon_state = "hair_bigflattop"
 
-/datum/sprite_accessory/hair/fag
+/datum/sprite_accessory/hair/flow
 	name = "Flow Hair"
 	icon_state = "hair_f"
 
@@ -470,3 +470,17 @@
 /datum/sprite_accessory/hair/quotey
 	name = "Tail Hair"
 	icon_state = "hair_tailhair"
+	ckeys_allowed = list("quotefox")
+
+/datum/sprite_accessory/hair/mommy
+	name = "(Hyper) Hairfre"
+	icon_state = "hair_hairfre"
+
+/datum/sprite_accessory/hair/sidehair
+	name = "(Hyper) Side Hair"
+	icon_state = "hair_tailhair2"
+	ckeys_allowed = list("quotefox")
+
+/datum/sprite_accessory/hair/curtains
+	name = "(Hyper) Curtains"
+	icon_state = "hair_curtains"

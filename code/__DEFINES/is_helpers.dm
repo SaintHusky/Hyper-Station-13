@@ -81,12 +81,16 @@ GLOBAL_LIST_INIT(turfs_without_ground, typecacheof(list(
 
 // Citadel specific species
 #define isipcperson(A) (is_species(A, /datum/species/ipc))
+#define issynthliz(A) (is_species(A, /datum/species/synthliz))
 #define ismammal(A) (is_species(A, /datum/species/mammal))
 #define isavian(A) (is_species(A, /datum/species/avian))
 #define isaquatic(A) (is_species(A, /datum/species/aquatic))
 #define isinsect(A) (is_species(A, /datum/species/insect))
 #define isxenoperson(A) (is_species(A, /datum/species/xeno))
 #define isstartjelly(A) (is_species(A, /datum/species/jelly/roundstartslime))
+
+// Hyperstation Carbon Stuff
+#define iswendigo(A) (istype(A, /mob/living/carbon/wendigo))
 
 //more carbon mobs
 #define ismonkey(A) (istype(A, /mob/living/carbon/monkey))
@@ -232,6 +236,8 @@ GLOBAL_LIST_INIT(heavyfootmob, typecacheof(list(
 #define is_cleanable(A) (istype(A, /obj/effect/decal/cleanable) || istype(A, /obj/effect/rune)) //if something is cleanable
 
 #define isorgan(A) (istype(A, /obj/item/organ))
+
+#define isclothing(A) (istype(A, /obj/item/clothing))
 
 GLOBAL_LIST_INIT(pointed_types, typecacheof(list(
 	/obj/item/pen,

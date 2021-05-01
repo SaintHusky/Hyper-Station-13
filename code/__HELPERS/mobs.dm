@@ -186,6 +186,9 @@
 		"cock_color"		= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
 		"has_sheath"		= FALSE,
 		"sheath_color"		= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
+		"has_belly" 		= FALSE,
+		"hide_belly" 		= FALSE,
+		"belly_color" 		= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
 		"has_balls" 		= FALSE,
 		"balls_internal" 	= FALSE,
 		"balls_color" 		= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
@@ -196,7 +199,7 @@
 		"balls_cum_rate"	= CUM_RATE,
 		"balls_cum_mult"	= CUM_RATE_MULT,
 		"balls_efficiency"	= CUM_EFFICIENCY,
-		"balls_fluid" 		= "semen",
+		"balls_fluid" 		= /datum/reagent/consumable/semen,
 		"has_ovi"			= FALSE,
 		"ovi_shape"			= "knotted",
 		"ovi_length"		= 6,
@@ -211,7 +214,7 @@
 		"breasts_color" 	= pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F"),
 		"breasts_size" 		= pick(GLOB.breasts_size_list),
 		"breasts_shape"		= "Pair",
-		"breasts_fluid" 	= "milk",
+		"breasts_fluid" 	= /datum/reagent/consumable/milk,
 		"breasts_producing" = FALSE,
 		"has_vag"			= FALSE,
 		"vag_shape"			= pick(GLOB.vagina_shapes_list),
@@ -227,7 +230,9 @@
 		"womb_fluid" 		= "femcum",
 		"ipc_screen"		= snowflake_ipc_antenna_list ? pick(snowflake_ipc_antenna_list) : "None",
 		"ipc_antenna" = "None",
-		"flavor_text"		= ""))
+		"flavor_text"		= "",
+		"silicon_flavor_text"		= "",
+		"ooc_text"			= ""))
 
 /proc/random_hair_style(gender)
 	switch(gender)
@@ -539,12 +544,16 @@ GLOBAL_LIST_EMPTY(species_list)
 		else
 			prefs = new
 
-		var/adminoverride = 0
+		var/override = FALSE
 		if(M.client && M.client.holder && (prefs.chat_toggles & CHAT_DEAD))
-			adminoverride = 1
-		if(isnewplayer(M) && !adminoverride)
+			override = TRUE
+		if(HAS_TRAIT(M, TRAIT_SIXTHSENSE))
+			override = TRUE
+		if(isnewplayer(M) && !override)
 			continue
-		if(M.stat != DEAD && !adminoverride)
+		if(SSticker.current_state == GAME_STATE_FINISHED)
+			override = TRUE
+		if(M.stat != DEAD && !override)
 			continue
 		if(speaker_key && speaker_key in prefs.ignoring)
 			continue

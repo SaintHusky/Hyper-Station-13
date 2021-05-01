@@ -53,7 +53,7 @@
 
 	var/alarms = list("Motion"=list(), "Fire"=list(), "Atmosphere"=list(), "Power"=list(), "Camera"=list(), "Burglar"=list())
 
-	var/speed = 0 // VTEC speed boost.
+	var/speed = list("enabled"=FALSE, "timer"=null, "ref"=null) // VTEC stats
 	var/magpulse = FALSE // Magboot-like effect.
 	var/ionpulse = FALSE // Jetpack-like effect.
 	var/ionpulse_on = FALSE // Jetpack-like effect.
@@ -198,7 +198,7 @@
 		radio.keyslot = null
 	//END CITADEL EDIT
 	if(connected_ai)
-		connected_ai.connected_robots -= src
+		set_connected_ai(null)
 	if(shell)
 		GLOB.available_ai_shells -= src
 	else
@@ -321,19 +321,20 @@
 	if(thruster_button)
 		thruster_button.icon_state = "ionpulse[ionpulse_on]"
 
-/mob/living/silicon/robot/Stat()
-	..()
-	if(statpanel("Status"))
-		if(cell)
-			stat("Charge Left:", "[cell.charge]/[cell.maxcharge]")
-		else
-			stat(null, text("No Cell Inserted!"))
 
-		if(module)
-			for(var/datum/robot_energy_storage/st in module.storages)
-				stat("[st.name]:", "[st.energy]/[st.max_energy]")
-		if(connected_ai)
-			stat("Master AI:", connected_ai.name)
+/mob/living/silicon/robot/get_status_tab_items()
+	. = ..()
+	. += ""
+	if(cell)
+		. += "Charge Left: [cell.charge]/[cell.maxcharge]"
+	else
+		. += text("No Cell Inserted!")
+
+	if(module)
+		for(var/datum/robot_energy_storage/st in module.storages)
+			. += "[st.name]: [st.energy]/[st.max_energy]"
+	if(connected_ai)
+		. += "Master AI: [connected_ai.name]"
 
 /mob/living/silicon/robot/restrained(ignore_grab)
 	. = 0
@@ -707,9 +708,7 @@
 	gib()
 
 /mob/living/silicon/robot/proc/UnlinkSelf()
-	if(src.connected_ai)
-		connected_ai.connected_robots -= src
-		src.connected_ai = null
+	set_connected_ai(null)
 	lawupdate = 0
 	lockcharge = 0
 	canmove = 1
@@ -1042,10 +1041,6 @@
 	if(hud_used)
 		hud_used.update_robot_modules_display()
 
-	if (hasExpanded)
-		resize = 0.5
-		hasExpanded = FALSE
-		update_transform()
 	module.transform_to(/obj/item/robot_module)
 
 	// Remove upgrades.
@@ -1055,7 +1050,7 @@
 
 	upgrades.Cut()
 
-	speed = 0
+	removeVTecStats()
 	ionpulse = FALSE
 	revert_shell()
 
@@ -1087,6 +1082,13 @@
 	magpulse = module.magpulsing
 	updatename()
 
+/mob/living/silicon/robot/update_transform()
+	. = ..()
+	if (hasExpanded)
+		var/matrix/ntransform = matrix(transform)
+		ntransform.Scale(2)	//This seems a bit big
+		ntransform.Translate(0, 16)
+		transform = ntransform
 
 /mob/living/silicon/robot/proc/place_on_head(obj/item/new_hat)
 	if(hat)
@@ -1130,7 +1132,7 @@
 		builtInCamera.c_tag = real_name	//update the camera name too
 	mainframe = AI
 	deployed = TRUE
-	connected_ai = mainframe
+	set_connected_ai(mainframe)
 	mainframe.connected_robots |= src
 	lawupdate = TRUE
 	lawsync()
@@ -1227,7 +1229,7 @@
 	. = ..(user)
 
 /mob/living/silicon/robot/proc/TryConnectToAI()
-	connected_ai = select_active_ai_with_fewest_borgs()
+	set_connected_ai(select_active_ai_with_fewest_borgs(z))
 	if(connected_ai)
 		connected_ai.connected_robots += src
 		lawsync()
@@ -1242,3 +1244,29 @@
 			connected_ai.aicamera.stored[i] = TRUE
 		for(var/i in connected_ai.aicamera.stored)
 			aicamera.stored[i] = TRUE
+
+/mob/living/silicon/robot/proc/removeVTecStats()
+	if (!speed["enabled"])
+		return FALSE
+
+	speed["enabled"] = FALSE
+	deltimer(speed["timer"])
+	RemoveAbility(speed["ref"])
+	remove_movespeed_modifier(MOVESPEED_ID_SILICON_VTEC)
+
+	speed["ref"] = null
+	speed["timer"] = null
+
+	update_transform()
+	return TRUE
+
+/mob/living/silicon/robot/proc/set_connected_ai(new_ai)
+	if(connected_ai == new_ai)
+		return
+	. = connected_ai
+	connected_ai = new_ai
+	if(.)
+		var/mob/living/silicon/ai/old_ai = .
+		old_ai.connected_robots -= src
+	if(connected_ai)
+		connected_ai.connected_robots |= src

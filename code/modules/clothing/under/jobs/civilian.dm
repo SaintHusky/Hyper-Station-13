@@ -340,7 +340,7 @@
 
 /obj/item/clothing/under/lawyer/blacksuit
 	name = "black suit"
-	desc = "A professional black suit. Nanotrasen Investigation Bureau approved!"
+	desc = "A professional black suit. Kinaris Investigation Bureau approved!"
 	icon_state = "blacksuit"
 	item_state = "bar_suit"
 	item_color = "blacksuit"
@@ -349,7 +349,7 @@
 
 /obj/item/clothing/under/lawyer/blacksuit/skirt
 	name = "black suitskirt"
-	desc = "A professional black suit. Nanotrasen Investigation Bureau approved!"
+	desc = "A professional black suit. Kinaris Investigation Bureau approved!"
 	icon_state = "blacksuit_skirt"
 	item_state = "bar_suit"
 	item_color = "blacksuit_skirt"
@@ -381,6 +381,7 @@
 	item_state = "b_suit"
 	item_color = "galaxy_blue"
 	can_adjust = FALSE
+	price = 10
 
 /obj/item/clothing/under/lawyer/galaxy_red
 	name = "\improper Pulsar Gonne"

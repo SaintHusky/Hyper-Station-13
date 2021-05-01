@@ -75,6 +75,10 @@
 	var/medium_burn_msg = "blistered"
 	var/heavy_burn_msg = "peeling away"
 
+	//writing on body parts with pens
+	var/writtentext = ""
+
+
 /obj/item/bodypart/examine(mob/user)
 	. = ..()
 	if(brute_dam > DAMAGE_PRECISION)
@@ -836,7 +840,7 @@
 	px_x = 2
 	px_y = 12
 	max_stamina_damage = 50
-	stam_heal_tick = 2
+	stam_heal_tick = 4
 
 /obj/item/bodypart/r_leg/is_disabled()
 	if(HAS_TRAIT(owner, TRAIT_PARALYSIS_R_LEG))

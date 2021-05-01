@@ -516,6 +516,7 @@
 	SetSleeping(0, FALSE)
 	radiation = 0
 	nutrition = NUTRITION_LEVEL_FED + 50
+	thirst = THIRST_LEVEL_QUENCHED + 50
 	bodytemperature = BODYTEMP_NORMAL
 	set_blindness(0)
 	set_blurriness(0)
@@ -1104,8 +1105,10 @@
 		A.action.Remove(src)
 
 /mob/living/proc/add_abilities_to_panel()
+	var/list/L = list()
 	for(var/obj/effect/proc_holder/A in abilities)
-		statpanel("[A.panel]",A.get_panel_text(),A)
+		L[++L.len] = list("[A.panel]",A.get_panel_text(),A.name,"[REF(A)]")
+	return L
 
 /mob/living/lingcheck()
 	if(mind)
@@ -1228,7 +1231,7 @@
 			clamp_unconscious_to = 0,
 			clamp_immobility_to = 0,
 			reset_misc = TRUE,
-			healing_chems = list("inaprovaline" = 3, "synaptizine" = 10, "regen_jelly" = 10, "stimulants" = 10),
+			healing_chems = list(/datum/reagent/medicine/inaprovaline = 3, /datum/reagent/medicine/synaptizine = 10, /datum/reagent/medicine/regen_jelly = 10, /datum/reagent/medicine/stimulants = 10),
 			message = "<span class='boldnotice'>You feel a surge of energy!</span>",
 			stamina_buffer_boost = 0,				//restores stamina buffer rather than just health
 			scale_stamina_loss_recovery,			//defaults to null. if this is set, restores loss * this stamina. make sure it's a fraction.
@@ -1255,6 +1258,6 @@
 	updatehealth()
 	update_stamina()
 	update_canmove()
-	for(var/chem in healing_chems)
-		reagents.add_reagent(chem, healing_chems[chem])
+	if(healing_chems)
+		reagents.add_reagent_list(healing_chems)
 

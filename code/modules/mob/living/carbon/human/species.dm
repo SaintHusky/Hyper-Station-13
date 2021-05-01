@@ -54,7 +54,7 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 	var/list/species_traits = list()
 	// generic traits tied to having the species
 	var/list/inherent_traits = list()
-	var/list/inherent_biotypes = list(MOB_ORGANIC, MOB_HUMANOID)
+	var/list/inherent_biotypes = MOB_ORGANIC|MOB_HUMANOID
 
 	var/attack_verb = "punch"	// punch-specific attack verb
 	var/sound/attack_sound = 'sound/weapons/punch1.ogg'
@@ -81,7 +81,7 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 	var/fixed_mut_color2 = ""
 	var/fixed_mut_color3 = ""
 	var/whitelisted = 0 		//Is this species restricted to certain players?
-	var/whitelist = list() 		//List the ckeys that can use this species, if it's whitelisted.: list("John Doe", "poopface666", "SeeALiggerPullTheTrigger") Spaces & capitalization can be included or ignored entirely for each key as it checks for both.
+	var/whitelist = list() 		//List the ckeys that can use this species, if it's whitelisted.: list("John Doe", "poopface666") Spaces & capitalization can be included or ignored entirely for each key as it checks for both.
 
 	var/icon_limbs //Overrides the icon used for the limbs of this species. Mainly for downstream, and also because hardcoded icons disgust me. Implemented and maintained as a favor in return for a downstream's implementation of synths.
 
@@ -549,6 +549,12 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 					if(UNDIE_COLORABLE(S))
 						MA.color = "#[H.socks_color]"
 					standing += MA
+
+		// nail paint (hyper)
+		if(H.nail_style)
+			var/mutable_appearance/nail_overlay = mutable_appearance('hyperstation/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
+			nail_overlay.color = H.nail_color
+			standing += nail_overlay
 
 	if(standing.len)
 		H.overlays_standing[BODY_LAYER] = standing
@@ -1205,9 +1211,9 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 	H.update_mutant_bodyparts()
 
 /datum/species/proc/handle_chemicals(datum/reagent/chem, mob/living/carbon/human/H)
-	if(chem.id == exotic_blood)
+	if(chem.type == exotic_blood)
 		H.blood_volume = min(H.blood_volume + round(chem.volume, 0.1), BLOOD_VOLUME_MAXIMUM)
-		H.reagents.del_reagent(chem.id)
+		H.reagents.del_reagent(chem.type)
 		return 1
 	return FALSE
 
@@ -1295,6 +1301,23 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 			H.throw_alert("nutrition", /obj/screen/alert/hungry)
 		if(0 to NUTRITION_LEVEL_STARVING)
 			H.throw_alert("nutrition", /obj/screen/alert/starving)
+
+/datum/species/proc/handle_thirst(mob/living/carbon/human/H)
+	if(HAS_TRAIT(src, TRAIT_NOTHIRST))
+		return
+
+	//Put more things here if you plan on adding more things. I know this proc is a bit empty at the moment
+	H.thirst -= THIRST_FACTOR
+
+
+	switch(H.thirst)
+		if(THIRST_LEVEL_THIRSTY to INFINITY)
+			H.clear_alert("thirst")
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			H.throw_alert("thirst", /obj/screen/alert/thirsty)
+		if(0 to THIRST_LEVEL_PARCHED)
+			H.throw_alert("thirst", /obj/screen/alert/dehydrated)
+
 
 /datum/species/proc/update_health_hud(mob/living/carbon/human/H)
 	return 0
@@ -1519,6 +1542,7 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 
 		target.lastattacker = user.real_name
 		target.lastattackerckey = user.ckey
+		user.dna.species.spec_unarmedattacked(user, target)
 
 		if(user.limb_destroyer)
 			target.dismembering_strike(user, affecting.body_zone)
@@ -1531,6 +1555,9 @@ GLOBAL_LIST_EMPTY(roundstart_races)
 			target.forcesay(GLOB.hit_appends)
 		else if(target.lying)
 			target.forcesay(GLOB.hit_appends)
+
+/datum/species/proc/spec_unarmedattacked(mob/living/carbon/human/user, mob/living/carbon/human/target)
+	return
 
 /datum/species/proc/disarm(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
 	// CITADEL EDIT slap mouthy gits and booty

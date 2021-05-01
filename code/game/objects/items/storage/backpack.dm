@@ -130,7 +130,7 @@
 
 /obj/item/storage/backpack/captain
 	name = "captain's backpack"
-	desc = "It's a special backpack made exclusively for Nanotrasen officers."
+	desc = "It's a special backpack made exclusively for Kinaris officers."
 	icon_state = "captainpack"
 	item_state = "captainpack"
 
@@ -258,7 +258,7 @@
 
 /obj/item/storage/backpack/satchel/cap
 	name = "captain's satchel"
-	desc = "An exclusive satchel for Nanotrasen officers."
+	desc = "An exclusive satchel for Kinaris officers."
 	icon_state = "satchel-cap"
 	item_state = "captainpack"
 
@@ -318,6 +318,9 @@
 		for(var/R in reward_all_of_these)
 			new R(src)
 		revealed = TRUE
+
+/obj/item/storage/backpack/satchel/flat/secret/chloe_ruin
+	reward_one_of_these = list(/obj/item/book/granter/spell/summonitem, /obj/item/book_of_babel)
 
 /obj/item/storage/backpack/duffelbag
 	name = "duffel bag"
@@ -434,7 +437,7 @@
 	STR.silent = TRUE
 
 /obj/item/storage/backpack/duffelbag/syndie/hitman
-	desc = "A large duffel bag for holding extra things. There is a Nanotrasen logo on the back."
+	desc = "A large duffel bag for holding extra things. There is a Kinaris logo on the back."
 	icon_state = "duffel-syndieammo"
 	item_state = "duffel-syndieammo"
 
@@ -479,12 +482,9 @@
 	desc = "A large duffel bag for holding surgical tools. Bears the logo of an advanced med-tech firm."
 
 /obj/item/storage/backpack/duffelbag/syndie/surgery_adv/PopulateContents()
-	new /obj/item/hemostat/adv(src)
-	new /obj/item/circular_saw/adv(src)
-	new /obj/item/scalpel/adv(src)
-	new /obj/item/retractor/adv(src)
-	new /obj/item/cautery/adv(src)
-	new /obj/item/surgicaldrill/adv(src)
+	new /obj/item/scalpel/advanced(src)
+	new /obj/item/retractor/advanced(src)
+	new /obj/item/surgicaldrill/advanced(src)
 	new /obj/item/surgical_drapes(src)
 	new /obj/item/storage/firstaid/tactical(src)
 	new /obj/item/clothing/suit/straight_jacket(src)

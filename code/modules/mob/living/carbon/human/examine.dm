@@ -25,16 +25,11 @@
 
 	var/list/obscured = check_obscured_slots()
 	var/skipface = (wear_mask && (wear_mask.flags_inv & HIDEFACE)) || (head && (head.flags_inv & HIDEFACE))
-
-	if(ishuman(src)) //user just returned, y'know, the user's own species. dumb.
-		var/mob/living/carbon/human/H = src
-		var/datum/species/pref_species = H.dna.species
-		if(get_visible_name() == "Unknown") // same as flavor text, but hey it works.
-			. += "You can't make out what species they are."
-		else if(skipface)
-			. += "You can't make out what species they are."
-		else
-			. += "[t_He] [t_is] a [H.dna.custom_species ? H.dna.custom_species : pref_species.name]!"
+	
+	if(skipface || get_visible_name() == "Unknown")
+		. += "You can't make out what species they are."
+	else
+		. += "[t_He] [t_is] a [dna.custom_species ? dna.custom_species : dna.species.name]!"
 
 	//uniform
 	if(w_uniform && !(SLOT_W_UNIFORM in obscured))
@@ -126,6 +121,11 @@
 	if(can_be_held)
 		. += "[t_He] might be able to be picked up with <b>Alt+Click</b>!\n"
 
+	//Heat Detection
+	if(breedable)
+		if(HAS_TRAIT(src, TRAIT_HEAT))
+			. += "<span class='love'>[t_He] [t_is] currently in heat.</span>"
+
 	//CIT CHANGES START HERE - adds genital details to examine text
 	if(LAZYLEN(internal_organs))
 		for(var/obj/item/organ/genital/dicc in internal_organs)
@@ -162,20 +162,21 @@
 		. += "<span class='deadsay'>It appears that [t_his] brain is missing...</span>"
 
 	var/temp = getBruteLoss() //no need to calculate each of these twice
-	
+
 	var/list/msg = list()
 
 	var/list/missing = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	var/list/disabled = list()
+	var/list/writing = list()
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
 		if(BP.disabled)
 			disabled += BP
+		if(BP.writtentext)
+			writing += BP
 		missing -= BP.body_zone
 		for(var/obj/item/I in BP.embedded_objects)
 			msg += "<B>[t_He] [t_has] \a [icon2html(I, user)] [I] embedded in [t_his] [BP.name]!</B>\n"
-			if(BP.broken)
-				msg += "<B>[t_He] [t_has] \a [I] broken [BP.name]!</B>\n"
 
 	for(var/X in disabled)
 		var/obj/item/bodypart/BP = X
@@ -270,7 +271,7 @@
 		else
 			msg += "<B>[t_He] [t_is] bleeding!</B>\n"
 
-	if(reagents.has_reagent("teslium"))
+	if(reagents.has_reagent(/datum/reagent/teslium))
 		msg += "[t_He] [t_is] emitting a gentle blue glow!\n"
 
 	if(islist(stun_absorption))
@@ -293,12 +294,16 @@
 			if(91.01 to INFINITY)
 				msg += "[t_He] [t_is] a shitfaced, slobbering wreck.\n"
 
-	if(reagents.has_reagent("astral"))
-		msg += "[t_He] have wild, spacey eyes"
+	if(reagents.has_reagent(/datum/reagent/fermi/astral))
 		if(mind)
-			msg += " and have a strange, abnormal look to them.\n"
+			msg += " and they have a strange, abnormal look to them.\n"
 		else
-			msg += " and don't look like they're all there.\n"
+			msg += " and they don't look like they're all there.\n"
+
+	for(var/X in writing)
+		if(!w_uniform)
+			var/obj/item/bodypart/BP = X
+			msg += "<span class='notice'>[capitalize(t_He)] has \"[html_encode(BP.writtentext)]\" written on [t_his] [BP.name].</span>\n"
 
 	if(isliving(user))
 		var/mob/living/L = user
@@ -349,6 +354,7 @@
 
 	if (length(msg))
 		. += "<span class='warning'>[msg.Join("")]</span>"
+	msg += common_trait_examine()
 
 	var/traitstring = get_trait_string()
 	if(ishuman(user))
@@ -397,14 +403,7 @@
 	else if(isobserver(user) && traitstring)
 		. += "<span class='info'><b>Traits:</b> [traitstring]</span>"
 
-	if(print_flavor_text())
-		if(get_visible_name() == "Unknown")	//Are we sure we know who this is? Don't show flavor text unless we can recognize them. Prevents certain metagaming with impersonation.
-			. += "...?"
-		else if(skipface) //Sometimes we're not unknown, but impersonating someone in a hardsuit, let's not reveal our flavor text then either.
-			. += "...?"
-		else
-			. += "[print_flavor_text()]"
-	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, msg)
+	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .) //This also handles flavor texts now
 	. += "*---------*</span>"
 
 /mob/living/proc/status_effect_examines(pronoun_replacement) //You can include this in any mob's examine() to show the examine texts of status effects!

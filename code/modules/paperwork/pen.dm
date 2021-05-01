@@ -23,7 +23,7 @@
 	throw_range = 7
 	materials = list(MAT_METAL=10)
 	pressure_resistance = 2
-	grind_results = list("iron" = 2, "iodine" = 1)
+	grind_results = list(/datum/reagent/iron = 2, /datum/reagent/iodine = 1)
 	var/colour = "black"	//what colour the ink is!
 	var/degrees = 0
 	var/font = PEN_FONT
@@ -105,21 +105,6 @@
 		to_chat(user, "<span class='notice'>You rotate the top of the pen to [degrees] degrees.</span>")
 		SEND_SIGNAL(src, COMSIG_PEN_ROTATED, deg, user)
 
-/obj/item/pen/attack(mob/living/M, mob/user,stealth)
-	if(!istype(M))
-		return
-
-	if(!force)
-		if(M.can_inject(user, 1))
-			to_chat(user, "<span class='warning'>You stab [M] with the pen.</span>")
-			if(!stealth)
-				to_chat(M, "<span class='danger'>You feel a tiny prick!</span>")
-			. = 1
-
-		log_combat(user, M, "stabbed", src)
-
-	else
-		. = ..()
 
 /obj/item/pen/afterattack(obj/O, mob/living/user, proximity)
 	. = ..()
@@ -165,9 +150,9 @@
 /obj/item/pen/sleepy/Initialize()
 	. = ..()
 	create_reagents(45, OPENCONTAINER)
-	reagents.add_reagent("chloralhydrate", 20)
-	reagents.add_reagent("mutetoxin", 15)
-	reagents.add_reagent("tirizene", 10)
+	reagents.add_reagent(/datum/reagent/toxin/chloralhydrate, 20)
+	reagents.add_reagent(/datum/reagent/toxin/mutetoxin, 15)
+	reagents.add_reagent(/datum/reagent/toxin/staminatoxin, 10)
 
 /*
  * (Alan) Edaggers

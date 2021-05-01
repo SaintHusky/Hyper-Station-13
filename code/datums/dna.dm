@@ -54,9 +54,11 @@
 	if(ishuman(destination))
 		var/mob/living/carbon/human/H = destination
 		H.give_genitals(TRUE)//This gives the body the genitals of this DNA. Used for any transformations based on DNA
-	destination.flavor_text = destination.dna.features["flavor_text"] //Update the flavor_text to use new dna text
+	destination.ooc_text = destination.dna.features["ooc_text"] //Update the flavor_text to use new dna text
 	if(transfer_SE)
 		destination.dna.mutation_index = mutation_index
+
+	SEND_SIGNAL(destination, COMSIG_CARBON_IDENTITY_TRANSFERRED_TO, src, transfer_SE)
 
 /datum/dna/proc/copy_dna(datum/dna/new_dna)
 	new_dna.unique_enzymes = unique_enzymes
@@ -355,7 +357,7 @@
 
 	if(newfeatures)
 		dna.features = newfeatures
-		flavor_text = dna.features["flavor_text"] //Update the flavor_text to use new dna text
+		ooc_text = dna.features["ooc_text"] //Update the flavor_text to use new dna text
 
 	if(mrace)
 		var/datum/species/newrace = new mrace.type
@@ -376,6 +378,9 @@
 	if(LAZYLEN(mutation_index))
 		dna.mutation_index = mutation_index
 		domutcheck()
+
+	SEND_SIGNAL(src, COMSIG_HUMAN_HARDSET_DNA, ui, newreal_name, newblood_type, mrace, newfeatures)
+	// change to SEND_SIGNAL(src, COMSIG_HUMAN_HARDSET_DNA, ui, se, newreal_name, newblood_type, mrace, newfeatures) if we add structural enzymes.
 
 	if(mrace || newfeatures || ui)
 		update_body()
@@ -476,14 +481,14 @@
 
 /proc/getleftblocks(input,blocknumber,blocksize)
 	if(blocknumber > 1)
-		return copytext(input,1,((blocksize*blocknumber)-(blocksize-1)))
+		return copytext_char(input,1,((blocksize*blocknumber)-(blocksize-1)))
 
 /proc/getrightblocks(input,blocknumber,blocksize)
 	if(blocknumber < (length(input)/blocksize))
-		return copytext(input,blocksize*blocknumber+1,length(input)+1)
+		return copytext_char(input,blocksize*blocknumber+1,length(input)+1)
 
 /proc/getblock(input, blocknumber, blocksize=DNA_BLOCK_SIZE)
-	return copytext(input, blocksize*(blocknumber-1)+1, (blocksize*blocknumber)+1)
+	return copytext_char(input, blocksize*(blocknumber-1)+1, (blocksize*blocknumber)+1)
 
 /proc/setblock(istring, blocknumber, replacement, blocksize=DNA_BLOCK_SIZE)
 	if(!istring || !blocknumber || !replacement || !blocksize)
